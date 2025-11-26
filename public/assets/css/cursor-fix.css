@@ -1,0 +1,40 @@
+/* Fix for white cursor visibility */
+* {
+    caret-color: #333 !important;
+}
+
+input, textarea, select {
+    caret-color: #333 !important;
+}
+
+.form-control, .form-select {
+    caret-color: #333 !important;
+}
+
+/* Dark cursor for better visibility */
+body {
+    caret-color: #000 !important;
+}
+
+/* Fix white text in service items */
+.service-item ul li {
+    color: #333 !important;
+}
+
+.service-item .list-unstyled li {
+    color: #333 !important;
+    transition: all 0.3s ease;
+}
+
+.service-item:hover .list-unstyled li {
+    color: #fff !important;
+}
+
+.service-item:hover {
+    background-color: #06BBCC !important;
+    color: #fff !important;
+}
+
+.service-item:hover h5 {
+    color: #fff !important;
+}
