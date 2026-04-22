@@ -65,13 +65,13 @@
 
     <div class="result {{ strtolower($pendaftar->status_akhir) }}">
         @if($pendaftar->status_akhir === 'LULUS')
-            <div class="result-text lulus">🎉 DINYATAKAN LULUS 🎉</div>
+            <div class="result-text lulus"><i class="bi bi-award-fill text-success me-1"></i> DINYATAKAN LULUS <i class="bi bi-award-fill text-success me-1"></i></div>
             <p><strong>SELAMAT!</strong> Anda diterima sebagai peserta didik baru di SMK Bali Global Badung.</p>
         @elseif($pendaftar->status_akhir === 'CADANGAN')
-            <div class="result-text cadangan">📋 DAFTAR CADANGAN</div>
+            <div class="result-text cadangan"><i class="bi bi-clipboard-data text-warning me-1"></i> DAFTAR CADANGAN</div>
             <p>Anda masuk dalam daftar cadangan. Mohon tunggu pengumuman selanjutnya.</p>
         @else
-            <div class="result-text tidak-lulus">😔 BELUM BERHASIL</div>
+            <div class="result-text tidak-lulus"><i class="bi bi-x-circle text-danger me-1"></i> BELUM BERHASIL</div>
             <p>Maaf, Anda belum berhasil dalam seleksi kali ini. Jangan menyerah dan coba lagi di kesempatan berikutnya.</p>
         @endif
     </div>

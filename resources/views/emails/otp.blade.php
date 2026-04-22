@@ -81,7 +81,7 @@
             </div>
             
             <div class="warning">
-                <strong>⚠️ Penting:</strong>
+                <strong><i class="bi bi-exclamation-triangle-fill text-warning me-1"></i> Penting:</strong>
                 <ul style="margin: 10px 0; padding-left: 20px;">
                     <li>Jangan bagikan kode OTP ini kepada siapapun</li>
                     <li>Kode akan kadaluarsa dalam 10 menit</li>

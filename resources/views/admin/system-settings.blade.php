@@ -19,16 +19,19 @@
                         @csrf
                         @method('PUT')
                         
-                        <div class="mb-3">
+                        <div class="mb-4">
                             <label for="biaya_pendaftaran" class="form-label">Biaya Pendaftaran (Rp)</label>
-                            <input type="number" class="form-control @error('biaya_pendaftaran') is-invalid @enderror" 
-                                   id="biaya_pendaftaran" name="biaya_pendaftaran" 
-                                   value="{{ old('biaya_pendaftaran', $settings['biaya_pendaftaran']->value ?? 250000) }}" 
-                                   min="0" step="1000">
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">Rp</span>
+                                <input type="text" class="form-control rupiah-input @error('biaya_pendaftaran') is-invalid @enderror" 
+                                       data-target="#biaya_pendaftaran_hidden" placeholder="0" required>
+                                <input type="hidden" id="biaya_pendaftaran_hidden" name="biaya_pendaftaran" 
+                                       value="{{ old('biaya_pendaftaran', $settings['biaya_pendaftaran']->value ?? 250000) }}">
+                            </div>
                             @error('biaya_pendaftaran')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                            <div class="form-text">Biaya pendaftaran yang akan dikenakan kepada calon siswa</div>
+                            <small class="text-muted d-block mt-1">Biaya *default* yang dikenakan saat pendaftar membuat akun baru. (Bisa ditimpa oleh harga dari Gelombang yang aktif)</small>
                         </div>
 
                         <button type="submit" class="btn btn-primary">Simpan Perubahan</button>

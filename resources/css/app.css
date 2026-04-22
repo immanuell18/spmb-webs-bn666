@@ -1,11 +1,145 @@
-@import 'tailwindcss';
+/*
+ * SPMB Design System CSS
+ *
+ * File ini HANYA berisi custom classes SPMB.
+ * Tidak menggunakan Tailwind @import karena project ini memakai Bootstrap 5.
+ * Bootstrap handles: navbar, grid, modal, form, btn, dll.
+ * File ini handles: SPMB custom components (badge, alert, card, dll).
+ */
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
+/* ================================================
+   SPMB Alert Styles
+   ================================================ */
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+.alert-spmb {
+    border-radius: 0.75rem;
+    border: 1px solid transparent;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    animation: spmbFadeIn 0.3s ease;
+    margin-bottom: 0.5rem;
 }
+.alert-spmb-success { background-color: #f0fdf4; border-color: #bbf7d0; color: #166534; }
+.alert-spmb-error   { background-color: #fef2f2; border-color: #fecaca; color: #991b1b; }
+.alert-spmb-info    { background-color: #eff6ff; border-color: #bfdbfe; color: #1e40af; }
+.alert-spmb-warning { background-color: #fffbeb; border-color: #fde68a; color: #92400e; }
+
+/* ================================================
+   SPMB Badge / Status Styles
+   ================================================ */
+
+.badge-spmb {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.125rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.025em;
+    white-space: nowrap;
+}
+.badge-submit       { background: #e0e7ff; color: #3730a3; }
+.badge-adm-pass     { background: #d1fae5; color: #065f46; }
+.badge-adm-reject   { background: #fee2e2; color: #991b1b; }
+.badge-paid         { background: #fef3c7; color: #92400e; }
+.badge-lulus        { background: #dcfce7; color: #14532d; }
+.badge-tidak-lulus  { background: #fee2e2; color: #991b1b; }
+.badge-cadangan     { background: #fef9c3; color: #713f12; }
+
+/* ================================================
+   SPMB Button Styles
+   (Prefix btn-spmb- agar tidak konflik dengan .btn Bootstrap)
+   ================================================ */
+
+.btn-spmb {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+    cursor: pointer;
+    text-decoration: none;
+    border: 1px solid transparent;
+    line-height: 1.5;
+}
+.btn-spmb:active           { transform: scale(0.97); }
+.btn-spmb-primary          { background: #2563eb; color: #fff; }
+.btn-spmb-primary:hover    { background: #1d4ed8; color: #fff; text-decoration: none; }
+.btn-spmb-secondary        { background: #fff; color: #1d4ed8; border-color: #bfdbfe; }
+.btn-spmb-secondary:hover  { background: #eff6ff; text-decoration: none; }
+.btn-spmb-danger           { background: #dc2626; color: #fff; }
+.btn-spmb-danger:hover     { background: #b91c1c; color: #fff; text-decoration: none; }
+.btn-spmb-ghost            { background: transparent; color: #475569; }
+.btn-spmb-ghost:hover      { background: #f1f5f9; text-decoration: none; }
+
+/* ================================================
+   SPMB Form Input
+   (Gunakan .input-spmb bukan override .form-control Bootstrap)
+   ================================================ */
+
+.input-spmb {
+    display: block;
+    width: 100%;
+    border-radius: 0.5rem;
+    border: 1px solid #cbd5e1;
+    background: #fff;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    color: #0f172a;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+    line-height: 1.5;
+}
+.input-spmb::placeholder  { color: #94a3b8; }
+.input-spmb:focus         { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+.input-spmb.is-invalid    { border-color: #f87171; }
+.input-spmb:disabled      { background: #f8fafc; cursor: not-allowed; }
+
+.label-spmb {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.25rem;
+}
+
+/* ================================================
+   SPMB Card
+   ================================================ */
+
+.card-spmb {
+    background: #fff;
+    border-radius: 0.75rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    overflow: hidden;
+}
+.card-spmb-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 600;
+    color: #1e293b;
+}
+.card-spmb-body { padding: 1rem 1.5rem; }
+
+/* ================================================
+   Animations & Global Helpers
+   ================================================ */
+
+@keyframes spmbFadeIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.animate-spmb-fade-in { animation: spmbFadeIn 0.3s ease; }

@@ -9,6 +9,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (!Schema::hasTable('jurusan')) {
+            return; // Tabel belum ada, skip
+        }
+
         // Disable foreign key checks
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         

@@ -70,7 +70,7 @@
                             👔 Executive Summary (Kepsek)
                         </button>
                         <button class="btn btn-outline-danger" onclick="exportPdf('pendaftar_periode')">
-                            📋 Laporan Pendaftar per Periode
+                            <i class="bi bi-clipboard-data text-warning me-1"></i> Laporan Pendaftar per Periode
                         </button>
                         <button class="btn btn-outline-danger" onclick="exportPdf('laporan_keuangan')">
                             💰 Laporan Keuangan
@@ -82,39 +82,29 @@
     </div>
 
     <!-- Quick Stats -->
-    <div class="row mb-4">
+    <div class="row g-3 mb-4">
+        @php
+        $reportCards = [
+            ['gradient'=>'linear-gradient(135deg,#6366f1,#4f46e5)','shadow'=>'rgba(99,102,241,0.3)','icon'=>'ti-users','label'=>'Total','value'=>\App\Models\Pendaftar::count(),'desc'=>'Total Pendaftar'],
+            ['gradient'=>'linear-gradient(135deg,#10b981,#059669)','shadow'=>'rgba(16,185,129,0.3)','icon'=>'ti-credit-card','label'=>'Bayar','value'=>\App\Models\Pendaftar::where('status','PAID')->count(),'desc'=>'Sudah Bayar'],
+            ['gradient'=>'linear-gradient(135deg,#f59e0b,#d97706)','shadow'=>'rgba(245,158,11,0.3)','icon'=>'ti-clock','label'=>'Pending','value'=>\App\Models\Pendaftar::where('status','SUBMIT')->count(),'desc'=>'Menunggu Verifikasi'],
+            ['gradient'=>'linear-gradient(135deg,#0ea5e9,#0284c7)','shadow'=>'rgba(14,165,233,0.3)','icon'=>'ti-school','label'=>'Kuota','value'=>\App\Models\Jurusan::sum('kuota'),'desc'=>'Total Kuota'],
+        ];
+        @endphp
+        @foreach($reportCards as $rc)
         <div class="col-md-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body text-center">
-                    <h4>{{ \App\Models\Pendaftar::count() }}</h4>
-                    <small>Total Pendaftar</small>
+            <div style="background:{{ $rc['gradient'] }};box-shadow:0 8px 24px {{ $rc['shadow'] }};border-radius:16px;padding:24px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                    <div style="width:48px;height:48px;background:rgba(255,255,255,0.25);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                        <i class="ti {{ $rc['icon'] }}" style="font-size:22px;color:#fff !important;"></i>
+                    </div>
+                    <span style="background:rgba(255,255,255,0.2);color:#fff !important;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;">{{ $rc['label'] }}</span>
                 </div>
+                <div style="color:#fff !important;font-size:32px;font-weight:800;line-height:1;margin-bottom:6px;">{{ $rc['value'] }}</div>
+                <div style="color:rgba(255,255,255,0.85) !important;font-size:13px;font-weight:500;">{{ $rc['desc'] }}</div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-success text-white">
-                <div class="card-body text-center">
-                    <h4>{{ \App\Models\Pendaftar::where('status', 'PAID')->count() }}</h4>
-                    <small>Sudah Bayar</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-warning text-white">
-                <div class="card-body text-center">
-                    <h4>{{ \App\Models\Pendaftar::where('status', 'SUBMIT')->count() }}</h4>
-                    <small>Menunggu Verifikasi</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-info text-white">
-                <div class="card-body text-center">
-                    <h4>{{ \App\Models\Jurusan::sum('kuota') }}</h4>
-                    <small>Total Kuota</small>
-                </div>
-            </div>
-        </div>
+        @endforeach
     </div>
 
     <!-- Export History -->
@@ -122,7 +112,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0">📋 Panduan Export</h5>
+                    <h5 class="mb-0"><i class="bi bi-clipboard-data text-warning me-1"></i> Panduan Export</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">

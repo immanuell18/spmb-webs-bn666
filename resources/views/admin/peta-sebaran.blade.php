@@ -8,16 +8,8 @@
     <div class="row mb-4">
         <div class="col-12">
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4 class="card-title mb-0">🗺️ Peta Sebaran Pendaftar</h4>
-                    <div>
-                        <button class="btn btn-info btn-sm" onclick="toggleHeatmap()">
-                            <i class="fas fa-fire"></i> Toggle Heatmap
-                        </button>
-                        <button class="btn btn-success btn-sm" onclick="exportMap()">
-                            <i class="fas fa-download"></i> Export Map
-                        </button>
-                    </div>
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="bi bi-map me-2 text-primary"></i> Peta Sebaran Pendaftar</h5>
                 </div>
             </div>
         </div>
@@ -72,39 +64,30 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row mb-4" id="statisticsCards">
+    <div class="row g-3 mb-4" id="statisticsCards">
+        @php
+        $mapCards = [
+            ['color'=>'primary','icon'=>'ti-users','id'=>'totalPendaftar','desc'=>'Total Pendaftar'],
+            ['color'=>'success','icon'=>'ti-credit-card','id'=>'sudahBayar','desc'=>'Sudah Bayar'],
+            ['color'=>'warning','icon'=>'ti-clock','id'=>'menungguVerifikasi','desc'=>'Menunggu Verifikasi'],
+            ['color'=>'danger','icon'=>'ti-file-x','id'=>'berkasRejected','desc'=>'Berkas Ditolak'],
+        ];
+        @endphp
+        @foreach($mapCards as $mc)
         <div class="col-md-3">
-            <div class="card bg-primary text-white">
+            <div class="card h-100">
                 <div class="card-body">
-                    <h5 id="totalPendaftar">0</h5>
-                    <small>Total Pendaftar</small>
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="text-xs text-uppercase fw-bold text-{{ $mc['color'] }}">{{ $mc['desc'] }}</div>
+                        <div style="width:36px;height:36px;background:var(--{{ $mc['color'] }}-bg, #f3f4f6);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                            <i class="ti {{ $mc['icon'] }} text-{{ $mc['color'] }}" style="font-size:18px;"></i>
+                        </div>
+                    </div>
+                    <div id="{{ $mc['id'] }}" class="h5" style="color:var(--text);font-size:28px;font-weight:800;margin:0;">0</div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-success text-white">
-                <div class="card-body">
-                    <h5 id="sudahBayar">0</h5>
-                    <small>Sudah Bayar</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-warning text-white">
-                <div class="card-body">
-                    <h5 id="menungguVerifikasi">0</h5>
-                    <small>Menunggu Verifikasi</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-danger text-white">
-                <div class="card-body">
-                    <h5 id="berkasRejected">0</h5>
-                    <small>Berkas Ditolak</small>
-                </div>
-            </div>
-        </div>
+        @endforeach
     </div>
 
     <!-- Map -->
@@ -367,35 +350,6 @@ function resetFilters() {
     loadMapData();
 }
 
-async function toggleHeatmap() {
-    try {
-        if (adminMap.heatmapLayer) {
-            if (adminMap.hasLayer(adminMap.heatmapLayer)) {
-                adminMap.removeLayer(adminMap.heatmapLayer);
-            } else {
-                adminMap.addLayer(adminMap.heatmapLayer);
-            }
-        } else {
-            // Load heatmap data
-            const response = await fetch('/api/map/heatmap');
-            const data = await response.json();
-            
-            adminMap.heatmapLayer = L.heatLayer(data, {
-                radius: 25,
-                blur: 15,
-                maxZoom: 17
-            });
-            
-            adminMap.addLayer(adminMap.heatmapLayer);
-        }
-    } catch (error) {
-        console.error('Error toggling heatmap:', error);
-    }
-}
 
-function exportMap() {
-    // Simple implementation - can be enhanced with html2canvas
-    alert('Export functionality will be implemented with html2canvas library');
-}
 </script>
 @endsection

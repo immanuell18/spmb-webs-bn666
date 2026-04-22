@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Pendaftar extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'pendaftar';
     
@@ -54,7 +55,64 @@ class Pendaftar extends Model
     const STATUS_AKHIR_TIDAK_LULUS = 'TIDAK_LULUS';
     const STATUS_AKHIR_CADANGAN = 'CADANGAN';
 
-    // Status flow helper methods
+    // =============================================
+    // ELOQUENT SCOPES — Fat Model, Skinny Controller
+    // =============================================
+
+    /** Pendaftar yang baru submit, menunggu verifikasi */
+    public function scopeMenungguVerifikasi($query)
+    {
+        return $query->where('status', self::STATUS_SUBMIT);
+    }
+
+    /** Pendaftar yang sudah lulus administrasi, boleh bayar */
+    public function scopeSudahVerifikasi($query)
+    {
+        return $query->where('status', self::STATUS_ADM_PASS);
+    }
+
+    /** Pendaftar yang berkas-nya ditolak */
+    public function scopeDitolak($query)
+    {
+        return $query->where('status', self::STATUS_ADM_REJECT);
+    }
+
+    /** Pendaftar yang sudah membayar */
+    public function scopeSudahBayar($query)
+    {
+        return $query->where('status', self::STATUS_PAID);
+    }
+
+    /** Pendaftar yang daftar hari ini */
+    public function scopeBaru($query)
+    {
+        return $query->whereDate('created_at', today());
+    }
+
+    /** Filter berdasarkan gelombang tertentu — nama filterGelombang agar tidak konflik dengan relationship gelombang() */
+    public function scopeFilterGelombang($query, $gelombangId)
+    {
+        return $gelombangId ? $query->where('gelombang_id', $gelombangId) : $query;
+    }
+
+    /** Pendaftar dengan data koordinat (untuk peta sebaran) */
+    public function scopeDenganKoordinat($query)
+    {
+        return $query->join('pendaftar_data_siswa', 'pendaftar.id', '=', 'pendaftar_data_siswa.pendaftar_id')
+                     ->whereNotNull('pendaftar_data_siswa.lat')
+                     ->whereNotNull('pendaftar_data_siswa.lng');
+    }
+
+    /** Tren pendaftaran N hari terakhir */
+    public function scopeTrenHarian($query, int $hari = 30)
+    {
+        return $query->selectRaw('DATE(created_at) as tanggal, COUNT(*) as jumlah')
+                     ->where('created_at', '>=', now()->subDays($hari))
+                     ->groupBy('tanggal')
+                     ->orderBy('tanggal');
+    }
+
+
     public function canProceedToPayment()
     {
         return $this->status === self::STATUS_ADM_PASS;

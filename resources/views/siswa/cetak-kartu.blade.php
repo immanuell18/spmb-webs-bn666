@@ -127,15 +127,15 @@
                             <div class="card-body text-center">
                                 @if($pendaftar->status_akhir === 'LULUS')
                                     <i class="fa fa-trophy fa-5x text-success mb-3"></i>
-                                    <h3 class="text-success">🎉 SELAMAT! ANDA DITERIMA!</h3>
+                                    <h3 class="text-success"><i class="bi bi-award-fill text-success me-1"></i> SELAMAT! ANDA DITERIMA!</h3>
                                     <p class="lead">Selamat bergabung dengan keluarga besar SMK Bali Global Badung</p>
                                 @elseif($pendaftar->status_akhir === 'CADANGAN')
                                     <i class="fa fa-clock fa-5x text-warning mb-3"></i>
-                                    <h3 class="text-warning">📋 ANDA MASUK DAFTAR CADANGAN</h3>
+                                    <h3 class="text-warning"><i class="bi bi-clipboard-data text-warning me-1"></i> ANDA MASUK DAFTAR CADANGAN</h3>
                                     <p class="lead">Mohon tunggu pengumuman selanjutnya</p>
                                 @else
                                     <i class="fa fa-times-circle fa-5x text-danger mb-3"></i>
-                                    <h3 class="text-danger">😔 MAAF, ANDA BELUM BERHASIL</h3>
+                                    <h3 class="text-danger"><i class="bi bi-x-circle text-danger me-1"></i> MAAF, ANDA BELUM BERHASIL</h3>
                                     <p class="lead">Jangan menyerah, coba lagi di kesempatan berikutnya</p>
                                 @endif
                                 <small class="text-muted">Diumumkan pada {{ $pendaftar->tgl_pengumuman->format('d M Y H:i') }}</small>

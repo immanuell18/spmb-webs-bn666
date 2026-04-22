@@ -461,6 +461,10 @@
                     }
                 });
                 
+                if (data.latitude && data.longitude && typeof updateMapFromInputs === 'function') {
+                    updateMapFromInputs(data.latitude, data.longitude);
+                }
+                
                 // Load cascade fields with delays
                 if (data.provinsi) {
                     $('#provinsi').val(data.provinsi).trigger('change');
@@ -510,79 +514,120 @@
             saveDraft();
         });
         
-        // Load draft will be called after provinsi data loaded
-        // Load Provinsi
-        $.get('/api/wilayah/provinsi', function(data) {
-            $('#provinsi').empty().append('<option value="">Pilih Provinsi</option>');
-            $.each(data, function(key, value) {
-                $('#provinsi').append('<option value="' + value.id + '">' + value.name + '</option>');
+        // ================================================
+        // WILAYAH CASCADE DROPDOWN
+        // Sumber data: emsifa API via Laravel proxy + cache
+        // https://github.com/emsifa/api-wilayah-indonesia
+        // ================================================
+
+        function setDropdownLoading(id, isLoading) {
+            const $el = $('#' + id);
+            const $label = $('label[for="' + id + '"]');
+            if (isLoading) {
+                $el.prop('disabled', true);
+                $label.html($label.text().replace(/ ⏳/g, '') + ' ⏳');
+            } else {
+                $label.html($label.text().replace(/ ⏳/g, ''));
+            }
+        }
+
+        function populateDropdown(id, data, emptyText) {
+            const $el = $('#' + id);
+            $el.empty().append('<option value="">' + emptyText + '</option>');
+            if (!data || data.length === 0) {
+                $el.append('<option value="" disabled>Tidak ada data</option>');
+                $el.prop('disabled', true);
+                return;
+            }
+            $.each(data, function(i, item) {
+                $el.append('<option value="' + item.id + '">' + item.name + '</option>');
             });
-            // Load draft after provinsi loaded
-            setTimeout(loadDraft, 500);
+            $el.prop('disabled', false);
+        }
+
+        // Load Provinsi saat halaman dibuka
+        setDropdownLoading('provinsi', true);
+        $.get('/api/wilayah/provinsi', function(data) {
+            populateDropdown('provinsi', data, 'Pilih Provinsi');
+            setDropdownLoading('provinsi', false);
+            // Load draft setelah provinsi ready
+            setTimeout(loadDraft, 300);
+        }).fail(function() {
+            $('#provinsi').empty().append('<option value="">⚠ Gagal memuat data provinsi</option>');
+            setDropdownLoading('provinsi', false);
+            console.error('Gagal load provinsi dari API');
         });
 
-        // Load Kabupaten when Provinsi changes
-        $('#provinsi').change(function() {
-            var provinsiId = $(this).val();
-            saveDraft(); // Save immediately when changed
-            if (provinsiId) {
-                $.get('/api/wilayah/kabupaten/' + provinsiId, function(data) {
-                    $('#kabupaten').empty().append('<option value="">Pilih Kabupaten</option>').prop('disabled', false);
-                    $.each(data, function(key, value) {
-                        $('#kabupaten').append('<option value="' + value.id + '">' + value.name + '</option>');
-                    });
-
-                }).fail(function() {
-                    console.log('Error loading kabupaten');
-                });
-            } else {
-                $('#kabupaten').empty().append('<option value="">Pilih Kabupaten</option>').prop('disabled', true);
-                $('#kecamatan').empty().append('<option value="">Pilih Kecamatan</option>').prop('disabled', true);
-                $('#kelurahan').empty().append('<option value="">Pilih Kelurahan</option>').prop('disabled', true);
-            }
-        });
-
-        // Load Kecamatan when Kabupaten changes
-        $('#kabupaten').change(function() {
-            var provinsiId = $('#provinsi').val();
-            var kabupatenId = $(this).val();
+        // Load Kabupaten saat Provinsi dipilih
+        $('#provinsi').on('change', function() {
+            const provinsiId = $(this).val();
             saveDraft();
-            if (kabupatenId) {
-                $.get('/api/wilayah/kecamatan/' + provinsiId + '/' + kabupatenId, function(data) {
-                    $('#kecamatan').empty().append('<option value="">Pilih Kecamatan</option>').prop('disabled', false);
-                    $.each(data, function(key, value) {
-                        $('#kecamatan').append('<option value="' + value.id + '">' + value.name + '</option>');
-                    });
 
-                }).fail(function() {
-                    console.log('Error loading kecamatan');
-                });
-            } else {
-                $('#kecamatan').empty().append('<option value="">Pilih Kecamatan</option>').prop('disabled', true);
-                $('#kelurahan').empty().append('<option value="">Pilih Kelurahan</option>').prop('disabled', true);
-            }
+            // Reset dropdown di bawahnya
+            $('#kabupaten').empty().append('<option value="">Pilih Kabupaten/Kota</option>').prop('disabled', true);
+            $('#kecamatan').empty().append('<option value="">Pilih Kecamatan</option>').prop('disabled', true);
+            $('#kelurahan').empty().append('<option value="">Pilih Kelurahan/Desa</option>').prop('disabled', true);
+
+            if (!provinsiId) return;
+
+            setDropdownLoading('kabupaten', true);
+            $.get('/api/wilayah/kabupaten/' + provinsiId, function(data) {
+                populateDropdown('kabupaten', data, 'Pilih Kabupaten/Kota');
+                setDropdownLoading('kabupaten', false);
+            }).fail(function() {
+                $('#kabupaten').empty().append('<option value="">⚠ Gagal memuat kabupaten</option>');
+                setDropdownLoading('kabupaten', false);
+            });
         });
 
-        // Load Kelurahan when Kecamatan changes
-        $('#kecamatan').change(function() {
-            var provinsiId = $('#provinsi').val();
-            var kabupatenId = $('#kabupaten').val();
-            var kecamatanId = $(this).val();
+        // Load Kecamatan saat Kabupaten dipilih
+        $('#kabupaten').on('change', function() {
+            const provinsiId  = $('#provinsi').val();
+            const kabupatenId = $(this).val();
             saveDraft();
-            if (kecamatanId) {
-                $.get('/api/wilayah/kelurahan/' + provinsiId + '/' + kabupatenId + '/' + kecamatanId, function(data) {
-                    $('#kelurahan').empty().append('<option value="">Pilih Kelurahan</option>').prop('disabled', false);
-                    $.each(data, function(key, value) {
-                        $('#kelurahan').append('<option value="' + value.id + '">' + value.name + '</option>');
-                    });
 
-                }).fail(function() {
-                    console.log('Error loading kelurahan');
-                });
-            } else {
-                $('#kelurahan').empty().append('<option value="">Pilih Kelurahan</option>').prop('disabled', true);
-            }
+            // Reset dropdown di bawahnya
+            $('#kecamatan').empty().append('<option value="">Pilih Kecamatan</option>').prop('disabled', true);
+            $('#kelurahan').empty().append('<option value="">Pilih Kelurahan/Desa</option>').prop('disabled', true);
+
+            if (!kabupatenId) return;
+
+            setDropdownLoading('kecamatan', true);
+            $.get('/api/wilayah/kecamatan/' + provinsiId + '/' + kabupatenId, function(data) {
+                populateDropdown('kecamatan', data, 'Pilih Kecamatan');
+                setDropdownLoading('kecamatan', false);
+            }).fail(function() {
+                $('#kecamatan').empty().append('<option value="">⚠ Gagal memuat kecamatan</option>');
+                setDropdownLoading('kecamatan', false);
+            });
         });
+
+        // Load Kelurahan saat Kecamatan dipilih
+        $('#kecamatan').on('change', function() {
+            const provinsiId  = $('#provinsi').val();
+            const kabupatenId = $('#kabupaten').val();
+            const kecamatanId = $(this).val();
+            saveDraft();
+
+            $('#kelurahan').empty().append('<option value="">Pilih Kelurahan/Desa</option>').prop('disabled', true);
+
+            if (!kecamatanId) return;
+
+            setDropdownLoading('kelurahan', true);
+            $.get('/api/wilayah/kelurahan/' + provinsiId + '/' + kabupatenId + '/' + kecamatanId, function(data) {
+                populateDropdown('kelurahan', data, 'Pilih Kelurahan/Desa');
+                setDropdownLoading('kelurahan', false);
+            }).fail(function() {
+                $('#kelurahan').empty().append('<option value="">⚠ Gagal memuat kelurahan</option>');
+                setDropdownLoading('kelurahan', false);
+            });
+        });
+
+        // Simpan kelurahan saat berubah
+        $(document).on('change', '#kelurahan', function() {
+            saveDraft();
+        });
+
         
         // Clear draft function
         window.clearDraft = function() {
@@ -659,7 +704,6 @@
     </script>
     
     <!-- Map Script -->
-    <script src="{{ asset('js/map.js') }}"></script>
     <script>
     // Enhanced coordinate picker
     let coordinateMap, currentMarker;
@@ -681,38 +725,87 @@
     });
     
     function initEnhancedCoordinatePicker() {
-        window.coordinateMap = L.map('coordinate-map').setView([-2.5, 118], 5);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(window.coordinateMap);
+        coordinateMap = L.map('coordinate-map').setView([-2.5, 118], 5);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(coordinateMap);
         
-        window.coordinateMap.on('click', function(e) {
+        coordinateMap.on('click', function(e) {
             const lat = e.latlng.lat;
             const lng = e.latlng.lng;
             
             // Isi input
             document.getElementById('latitude').value = lat.toFixed(6);
             document.getElementById('longitude').value = lng.toFixed(6);
+            $('#latitude, #longitude').trigger('input');
             
             // Hapus marker lama
-            if (window.currentMarker) {
-                window.coordinateMap.removeLayer(window.currentMarker);
+            if (currentMarker) {
+                coordinateMap.removeLayer(currentMarker);
             }
             
             // Tambah marker baru
-            window.currentMarker = L.marker([lat, lng]).addTo(window.coordinateMap);
-            
-            alert(`Koordinat dipilih:\nLatitude: ${lat.toFixed(6)}\nLongitude: ${lng.toFixed(6)}`);
+            currentMarker = L.marker([lat, lng]).addTo(coordinateMap);
         });
+
+        // Check initial coordinates from draft or old input
+        const initLat = document.getElementById('latitude').value;
+        const initLng = document.getElementById('longitude').value;
+        if (initLat && initLng) {
+            updateMapFromInputs(initLat, initLng);
+        }
     }
+
+    function updateMapFromInputs(lat, lng) {
+        if (!coordinateMap) return;
+        
+        let pLat = parseFloat(lat);
+        let pLng = parseFloat(lng);
+        
+        if (!isNaN(pLat) && !isNaN(pLng)) {
+            if (currentMarker) {
+                coordinateMap.removeLayer(currentMarker);
+            }
+            currentMarker = L.marker([pLat, pLng]).addTo(coordinateMap);
+            
+            // Render tiles properly and animate zoom to location
+            setTimeout(() => {
+                coordinateMap.invalidateSize();
+                coordinateMap.flyTo([pLat, pLng], 16, {
+                    animate: true,
+                    duration: 1.5
+                });
+            }, 100);
+        } else {
+            if (currentMarker) {
+                coordinateMap.removeLayer(currentMarker);
+                currentMarker = null;
+            }
+            setTimeout(() => {
+                coordinateMap.invalidateSize();
+                coordinateMap.flyTo([-2.5, 118], 5, {
+                    animate: true,
+                    duration: 1.5
+                });
+            }, 100);
+        }
+    }
+
+    // Listener interaktif form inputs
+    $('#latitude, #longitude').on('input change', function() {
+        const lat = $('#latitude').val();
+        const lng = $('#longitude').val();
+        if (typeof updateMapFromInputs === 'function') {
+            updateMapFromInputs(lat, lng);
+        }
+    });
     
     window.getCurrentLocation = function() {
-        alert('Tombol Lokasi Saya diklik!');
-        
         if (!navigator.geolocation) {
             alert('Browser tidak mendukung GPS');
             return;
         }
         
         const btn = $('#btnCurrentLocation');
+        const originalText = btn.html();
         btn.html('<i class="fas fa-spinner fa-spin"></i> Mencari...');
         
         navigator.geolocation.getCurrentPosition(
@@ -720,24 +813,13 @@
                 const lat = position.coords.latitude;
                 const lng = position.coords.longitude;
                 
-                alert(`Lokasi ditemukan!\nLatitude: ${lat}\nLongitude: ${lng}`);
-                
                 // Isi input koordinat
                 document.getElementById('latitude').value = lat.toFixed(6);
                 document.getElementById('longitude').value = lng.toFixed(6);
+                $('#latitude, #longitude').trigger('input');
                 
-                // Hapus marker lama jika ada
-                if (window.currentMarker) {
-                    coordinateMap.removeLayer(window.currentMarker);
-                }
-                
-                // Tambah marker baru
-                window.currentMarker = L.marker([lat, lng]).addTo(coordinateMap);
-                
-                // Zoom ke lokasi
-                coordinateMap.setView([lat, lng], 16);
-                
-                btn.html('<i class="fas fa-crosshairs"></i> Lokasi Saya');
+                if (typeof updateMapFromInputs === 'function') updateMapFromInputs(lat, lng);
+                btn.html(originalText);
             },
             function(error) {
                 let msg = 'Gagal mendapatkan lokasi: ';
@@ -746,7 +828,7 @@
                 else if (error.code === 3) msg += 'Timeout';
                 
                 alert(msg);
-                btn.html('<i class="fas fa-crosshairs"></i> Lokasi Saya');
+                btn.html(originalText);
             },
             { enableHighAccuracy: true, timeout: 15000 }
         );
@@ -770,22 +852,12 @@
     }
     
     window.clearCoordinates = function() {
-        alert('Menghapus koordinat...');
-        
         // Kosongkan input
         document.getElementById('latitude').value = '';
         document.getElementById('longitude').value = '';
+        $('#latitude, #longitude').trigger('input');
         
-        // Hapus marker
-        if (window.currentMarker) {
-            coordinateMap.removeLayer(window.currentMarker);
-            window.currentMarker = null;
-        }
-        
-        // Reset peta ke Indonesia
-        coordinateMap.setView([-2.5, 118], 5);
-        
-        alert('Koordinat berhasil dihapus!');
+        if (typeof updateMapFromInputs === 'function') updateMapFromInputs(null, null);
     };
     
     function showStatus(message, type) {

@@ -15,40 +15,48 @@ return new class extends Migration
                 $table->string('hp', 20)->nullable()->after('email');
             }
             if (!Schema::hasColumn('users', 'aktif')) {
-                $table->tinyInteger('aktif')->default(1)->after('role');
+                $table->tinyInteger('aktif')->default(1)->after('email');
             }
         });
 
-        // 2. Update role enum di users
-        DB::table('users')->where('role', 'calon_siswa')->update(['role' => 'pendaftar']);
-        DB::table('users')->where('role', 'verifikator')->update(['role' => 'verifikator_adm']);
+        // 2. Update role enum di users (hanya jika kolom role sudah ada)
+        if (Schema::hasColumn('users', 'role')) {
+            DB::table('users')->where('role', 'calon_siswa')->update(['role' => 'pendaftar']);
+            DB::table('users')->where('role', 'verifikator')->update(['role' => 'verifikator_adm']);
+        }
 
-        // 3. Tambah kolom agama di pendaftar_data_siswa
-        Schema::table('pendaftar_data_siswa', function (Blueprint $table) {
-            if (!Schema::hasColumn('pendaftar_data_siswa', 'agama')) {
-                $table->string('agama', 20)->nullable()->after('jk');
-            }
-        });
+        // 3. Tambah kolom agama di pendaftar_data_siswa (hanya jika tabelnya sudah ada)
+        if (Schema::hasTable('pendaftar_data_siswa')) {
+            Schema::table('pendaftar_data_siswa', function (Blueprint $table) {
+                if (!Schema::hasColumn('pendaftar_data_siswa', 'agama')) {
+                    $table->string('agama', 20)->nullable()->after('jk');
+                }
+            });
+        }
 
-        // 4. Tambah kolom status di gelombang
-        Schema::table('gelombang', function (Blueprint $table) {
-            if (!Schema::hasColumn('gelombang', 'status')) {
-                $table->enum('status', ['aktif', 'nonaktif'])->default('aktif')->after('biaya_daftar');
-            }
-        });
+        // 4. Tambah kolom status di gelombang (hanya jika tabelnya sudah ada)
+        if (Schema::hasTable('gelombang')) {
+            Schema::table('gelombang', function (Blueprint $table) {
+                if (!Schema::hasColumn('gelombang', 'status')) {
+                    $table->enum('status', ['aktif', 'nonaktif'])->default('aktif')->after('biaya_daftar');
+                }
+            });
+        }
 
-        // 5. Tambah kolom status_akhir di pendaftar
-        Schema::table('pendaftar', function (Blueprint $table) {
-            if (!Schema::hasColumn('pendaftar', 'status_akhir')) {
-                $table->enum('status_akhir', ['LULUS', 'TIDAK_LULUS', 'CADANGAN'])->nullable()->after('status');
-            }
-            if (!Schema::hasColumn('pendaftar', 'tgl_pengumuman')) {
-                $table->datetime('tgl_pengumuman')->nullable()->after('status_akhir');
-            }
-            if (!Schema::hasColumn('pendaftar', 'user_pengumuman')) {
-                $table->string('user_pengumuman', 100)->nullable()->after('tgl_pengumuman');
-            }
-        });
+        // 5. Tambah kolom status_akhir di pendaftar (hanya jika tabelnya sudah ada)
+        if (Schema::hasTable('pendaftar')) {
+            Schema::table('pendaftar', function (Blueprint $table) {
+                if (!Schema::hasColumn('pendaftar', 'status_akhir')) {
+                    $table->enum('status_akhir', ['LULUS', 'TIDAK_LULUS', 'CADANGAN'])->nullable()->after('status');
+                }
+                if (!Schema::hasColumn('pendaftar', 'tgl_pengumuman')) {
+                    $table->datetime('tgl_pengumuman')->nullable()->after('status_akhir');
+                }
+                if (!Schema::hasColumn('pendaftar', 'user_pengumuman')) {
+                    $table->string('user_pengumuman', 100)->nullable()->after('tgl_pengumuman');
+                }
+            });
+        }
 
         // 6. Update enum values (hati-hati)
         try {

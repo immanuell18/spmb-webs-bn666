@@ -7,7 +7,7 @@
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
     <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="background: #4CAF50; color: white; padding: 20px; text-align: center;">
-            <h1>✅ Pembayaran Terverifikasi</h1>
+            <h1><i class="bi bi-check-circle-fill text-success me-1"></i> Pembayaran Terverifikasi</h1>
         </div>
         
         <div style="padding: 20px; background: #f9f9f9;">
@@ -17,7 +17,7 @@
             
             <div style="background: #e8f5e8; border: 1px solid #4CAF50; padding: 15px; margin: 20px 0; border-radius: 5px;">
                 <h3 style="color: #2e7d32; margin-top: 0;">Status Pendaftaran:</h3>
-                <p style="margin-bottom: 0;">✅ <strong>LUNAS</strong> - Pendaftaran Anda telah selesai</p>
+                <p style="margin-bottom: 0;"><i class="bi bi-check-circle-fill text-success me-1"></i> <strong>LUNAS</strong> - Pendaftaran Anda telah selesai</p>
             </div>
             
             <p><strong>Langkah selanjutnya:</strong></p>

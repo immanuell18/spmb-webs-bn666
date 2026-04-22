@@ -132,7 +132,7 @@
                                             </button>
                                         </form>
                                         @if($g->pendaftar->count() === 0)
-                                        <form action="{{ route('admin.gelombang.delete', $g->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus?')">
+                                        <form action="{{ route('admin.gelombang.destroy', $g->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus?')">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-danger">
@@ -376,41 +376,77 @@
                 
                 <!-- Persyaratan Tab -->
                 <div class="tab-pane fade" id="biaya" role="tabpanel">
-                    <div class="row justify-content-center">
-                        <div class="col-md-8">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h6 class="mb-0">Persyaratan Berkas Pendaftaran</h6>
-                                </div>
-                                <div class="card-body">
-                                    <h6 class="mb-3">Daftar Persyaratan</h6>
-                                    <div class="list-group" id="persyaratanList">
-                                        @forelse($persyaratan ?? [] as $p)
-                                        <div class="list-group-item d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <strong>{{ $p->nama }}</strong>
-                                                @if($p->deskripsi)
-                                                <br><small class="text-muted">{{ $p->deskripsi }}</small>
-                                                @endif
-                                            </div>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <span class="badge bg-{{ $p->wajib ? 'primary' : 'secondary' }}">{{ $p->wajib ? 'Wajib' : 'Opsional' }}</span>
-                                                <span class="badge bg-info">{{ ucfirst($p->jenis) }}</span>
-                                            </div>
-                                        </div>
-                                        @empty
-                                        <div class="list-group-item text-center">
-                                            Belum ada persyaratan yang ditambahkan
-                                        </div>
-                                        @endforelse
-                                    </div>
-                                    <div class="alert alert-info mt-3">
-                                        <i class="ti ti-info-circle me-2"></i>
-                                        <strong>Catatan:</strong> Biaya pendaftaran diatur per gelombang di tab Gelombang. Persyaratan ini akan muncul di halaman pendaftaran dan beranda.
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h6 class="mb-0 fw-bold">Daftar Persyaratan Pendaftaran</h6>
+                            <small class="text-muted">Kelola dokumen atau foto yang wajib/opsional diunggah pendaftar</small>
                         </div>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPersyaratanModal">
+                            <i class="ti ti-plus pe-1"></i> Tambah Persyaratan
+                        </button>
+                    </div>
+
+                    <div class="alert alert-info bg-info-subtle text-info border-0 d-flex align-items-center mb-4">
+                        <i class="ti ti-info-circle fs-5 me-2"></i>
+                        <span><strong>Catatan:</strong> Biaya pendaftaran diatur per gelombang di tab Gelombang. Persyaratan di bawah ini akan muncul di halaman upload berkas pendaftar.</span>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nama Persyaratan</th>
+                                    <th>Jenis</th>
+                                    <th>Sifat</th>
+                                    <th>Urutan</th>
+                                    <th class="text-end">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($persyaratan ?? [] as $p)
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold">{{ $p->nama }}</div>
+                                        @if($p->deskripsi)
+                                        <small class="text-muted">{{ $p->deskripsi }}</small>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">
+                                            {{ ucfirst($p->jenis) }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if($p->wajib)
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">Wajib</span>
+                                        @else
+                                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill">Opsional</span>
+                                        @endif
+                                    </td>
+                                    <td>{{ $p->urutan }}</td>
+                                    <td class="text-end">
+                                        <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editPersyaratanModal{{ $p->id }}" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        <form action="{{ route('admin.persyaratan.destroy', $p->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus persyaratan ini?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
+                                                <i class="ti ti-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">
+                                        <i class="ti ti-folder-off fs-1 d-block mb-2"></i>
+                                        Belum ada persyaratan yang ditambahkan
+                                    </td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -531,7 +567,11 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Biaya Pendaftaran</label>
-                        <input type="number" class="form-control" name="biaya_daftar" required min="0">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">Rp</span>
+                            <input type="text" class="form-control rupiah-input" data-target="#hidden_biaya_daftar_add" placeholder="0" required>
+                            <input type="hidden" name="biaya_daftar" id="hidden_biaya_daftar_add">
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Status</label>
@@ -581,7 +621,11 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Biaya Pendaftaran</label>
-                        <input type="number" class="form-control" name="biaya_daftar" value="{{ $g->biaya_daftar }}" required min="0">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">Rp</span>
+                            <input type="text" class="form-control rupiah-input" data-target="#hidden_biaya_daftar_{{ $g->id }}" placeholder="0" required>
+                            <input type="hidden" name="biaya_daftar" id="hidden_biaya_daftar_{{ $g->id }}" value="{{ $g->biaya_daftar }}">
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Status</label>
@@ -605,7 +649,7 @@
 <div class="modal fade" id="addProvinsiModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ route('admin.wilayah.store') }}" method="POST">
+            <form action="#" method="POST">
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title">Tambah Provinsi</h5>
@@ -635,7 +679,7 @@
 <div class="modal fade" id="addKabupatenModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ route('admin.wilayah.store') }}" method="POST">
+            <form action="#" method="POST">
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title">Tambah Kabupaten/Kota</h5>
@@ -677,7 +721,7 @@
 <div class="modal fade" id="editProvinsiModal{{ $p->id }}" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ route('admin.wilayah.update', $p->id) }}" method="POST">
+            <form action="#" method="POST">
                 @csrf
                 @method('PUT')
                 <input type="hidden" name="type" value="province">
@@ -706,7 +750,7 @@
 <div class="modal fade" id="editRegencyModal{{ $r->id }}" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ route('admin.wilayah.update', $r->id) }}" method="POST">
+            <form action="#" method="POST">
                 @csrf
                 @method('PUT')
                 <input type="hidden" name="type" value="regency">
@@ -735,7 +779,7 @@
 <div class="modal fade" id="editDistrictModal{{ $d->id }}" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ route('admin.wilayah.update', $d->id) }}" method="POST">
+            <form action="#" method="POST">
                 @csrf
                 @method('PUT')
                 <input type="hidden" name="type" value="district">
@@ -764,7 +808,7 @@
 <div class="modal fade" id="editVillageModal{{ $v->id }}" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ route('admin.wilayah.update', $v->id) }}" method="POST">
+            <form action="#" method="POST">
                 @csrf
                 @method('PUT')
                 <input type="hidden" name="type" value="village">
@@ -892,6 +936,34 @@
 @endsection
 
 @push('scripts')
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const rupiahInputs = document.querySelectorAll('.rupiah-input');
+    rupiahInputs.forEach(function(input) {
+        const hiddenTarget = document.querySelector(input.getAttribute('data-target'));
+        
+        if (hiddenTarget && hiddenTarget.value) {
+            input.value = new Intl.NumberFormat('id-ID').format(hiddenTarget.value);
+        }
+
+        input.addEventListener('input', function(e) {
+            let value = this.value.replace(/[^,\d]/g, '');
+            let parts = value.split(',');
+            let number = parts[0].replace(/\D/g, '');
+            
+            if (hiddenTarget) {
+                hiddenTarget.value = number;
+            }
+            
+            if (number) {
+                this.value = new Intl.NumberFormat('id-ID').format(number);
+            } else {
+                this.value = '';
+            }
+        });
+    });
+});
+</script>
 <script>
 // Filter Provinsi
 function filterProvinsi() {

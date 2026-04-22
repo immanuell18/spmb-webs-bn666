@@ -54,8 +54,9 @@
                                         <option value="">Pilih Role</option>
                                         <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Admin</option>
                                         <option value="keuangan" {{ old('role', $user->role) == 'keuangan' ? 'selected' : '' }}>Keuangan</option>
-                                        <option value="verifikator" {{ old('role', $user->role) == 'verifikator' ? 'selected' : '' }}>Verifikator</option>
+                                        <option value="verifikator_adm" {{ old('role', $user->role) == 'verifikator_adm' ? 'selected' : '' }}>Verifikator</option>
                                         <option value="kepsek" {{ old('role', $user->role) == 'kepsek' ? 'selected' : '' }}>Kepala Sekolah</option>
+                                        <option value="pendaftar" {{ old('role', $user->role) == 'pendaftar' ? 'selected' : '' }}>Pendaftar</option>
                                     </select>
                                     @error('role')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -66,15 +67,14 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Status Akun</label>
-                                    <div>
-                                        @if($user->status)
-                                            <span class="badge bg-success">Aktif</span>
-                                        @else
-                                            <span class="badge bg-danger">Nonaktif</span>
-                                        @endif
-                                        <small class="text-muted d-block">Gunakan tombol toggle status untuk mengubah</small>
-                                    </div>
+                                    <label for="status" class="form-label">Status Akun</label>
+                                    <select class="form-select @error('status') is-invalid @enderror" id="status" name="status" required>
+                                        <option value="1" {{ old('status', $user->status) ? 'selected' : '' }}>Aktif</option>
+                                        <option value="0" {{ !old('status', $user->status) ? 'selected' : '' }}>Nonaktif</option>
+                                    </select>
+                                    @error('status')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
                         </div>

@@ -4,325 +4,270 @@
 
 @section('content')
 <div class="container-fluid">
-    <!--  Row 1 -->
-    <div class="row">
-        <div class="col-lg-8 d-flex align-items-strech">
-            <div class="card w-100">
+    <!-- Welcome -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h3 class="mb-1">Selamat Datang, {{ auth()->user()->name }} 👋</h3>
+            <p class="mb-0" style="color: var(--text3); font-size: 13px;">Ringkasan pendaftaran, {{ now()->translatedFormat('l, d F Y') }}</p>
+        </div>
+        <select class="form-select" id="gelombangFilter" style="max-width: 220px;">
+            @foreach($statistikGelombang as $gel)
+            <option value="{{ $gel->id }}" {{ $gelombangAktif && $gelombangAktif->id == $gel->id ? 'selected' : '' }}>
+                {{ $gel->nama }} ({{ $gel->status }})
+            </option>
+            @endforeach
+        </select>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="row mb-2">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card h-100">
                 <div class="card-body">
-                    <div class="d-sm-flex d-block align-items-center justify-content-between mb-9">
-                        <div class="mb-3 mb-sm-0">
-                            <h5 class="card-title fw-semibold">Ringkasan Pendaftaran Harian</h5>
-                        </div>
+                    <div class="d-flex align-items-center justify-content-between">
                         <div>
-                            <select class="form-select" id="gelombangFilter">
-                                @foreach($statistikGelombang as $gel)
-                                <option value="{{ $gel->id }}" {{ $gelombangAktif && $gelombangAktif->id == $gel->id ? 'selected' : '' }}>
-                                    {{ $gel->nama }} ({{ $gel->status }})
-                                </option>
-                                @endforeach
-                            </select>
+                            <div style="font-size: 12px; font-weight: 500; color: var(--text4); text-transform: uppercase; letter-spacing: .03em; margin-bottom: 6px;">Total Pendaftar</div>
+                            <div class="total-pendaftar" style="font-size: 32px; font-weight: 800; color: var(--text); letter-spacing: -0.02em; line-height: 1;">{{ $totalPendaftar }}</div>
+                        </div>
+                        <div style="width: 48px; height: 48px; background: #eef2ff; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <i class="ti ti-users" style="font-size: 22px; color: #6366f1;"></i>
                         </div>
                     </div>
-                    <div id="chart"></div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-4">
-            <div class="row">
-                <div class="col-lg-12">
-                    <!-- Yearly Breakup -->
-                    <div class="card overflow-hidden">
-                        <div class="card-body p-4">
-                            <h5 class="card-title mb-9 fw-semibold">Total Pendaftar</h5>
-                            <div class="row align-items-center">
-                                <div class="col-8">
-                                    <h4 class="fw-semibold mb-3 total-pendaftar">{{ $totalPendaftar }}</h4>
-                                    <div class="d-flex align-items-center mb-3">
-                                        <span class="me-1 rounded-circle bg-light-success round-20 d-flex align-items-center justify-content-center">
-                                            <i class="ti ti-arrow-up-left text-success"></i>
-                                        </span>
-                                        <p class="text-dark me-1 fs-3 mb-0">+15%</p>
-                                        <p class="fs-3 mb-0">dari bulan lalu</p>
-                                    </div>
-                                    <div class="d-flex align-items-center">
-                                        <div class="me-4">
-                                            <span class="round-8 bg-primary rounded-circle me-2 d-inline-block"></span>
-                                            <span class="fs-2">Terverifikasi</span>
-                                        </div>
-                                        <div>
-                                            <span class="round-8 bg-light-primary rounded-circle me-2 d-inline-block"></span>
-                                            <span class="fs-2">Pending</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-4">
-                                    <div class="d-flex justify-content-center">
-                                        <div id="breakup"></div>
-                                    </div>
-                                </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div style="font-size: 12px; font-weight: 500; color: var(--text4); text-transform: uppercase; letter-spacing: .03em; margin-bottom: 6px;">Terverifikasi</div>
+                            <div style="font-size: 32px; font-weight: 800; color: var(--text); letter-spacing: -0.02em; line-height: 1;">{{ $sudahVerifikasi }}</div>
+                            <div class="mt-2">
+                                <div class="progress" style="width: 100px;"><div class="progress-bar bg-success" style="width: {{ $totalPendaftar > 0 ? ($sudahVerifikasi/$totalPendaftar)*100 : 0 }}%"></div></div>
                             </div>
+                        </div>
+                        <div style="width: 48px; height: 48px; background: #ecfdf5; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <i class="ti ti-circle-check" style="font-size: 22px; color: #10b981;"></i>
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-12">
-                    <!-- Monthly Earnings -->
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="row alig n-items-start">
-                                <div class="col-8">
-                                    <h5 class="card-title mb-9 fw-semibold">Pembayaran</h5>
-                                    <h4 class="fw-semibold mb-3 total-pembayaran">Rp {{ number_format($sudahBayar * \App\Models\SystemSetting::getBiayaPendaftaran(), 0, ',', '.') }}</h4>
-                                    <div class="d-flex align-items-center pb-1">
-                                        <span class="me-2 rounded-circle bg-light-danger round-20 d-flex align-items-center justify-content-center">
-                                            <i class="ti ti-arrow-down-right text-danger"></i>
-                                        </span>
-                                        <p class="text-dark me-1 fs-3 mb-0">+9%</p>
-                                        <p class="fs-3 mb-0">dari bulan lalu</p>
-                                    </div>
-                                </div>
-                                <div class="col-4">
-                                    <div class="d-flex justify-content-end">
-                                        <div class="text-white bg-secondary rounded-circle p-6 d-flex align-items-center justify-content-center">
-                                            <i class="ti ti-currency-dollar fs-6"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div style="font-size: 12px; font-weight: 500; color: var(--text4); text-transform: uppercase; letter-spacing: .03em; margin-bottom: 6px;">Sudah Bayar</div>
+                            <div style="font-size: 32px; font-weight: 800; color: var(--text); letter-spacing: -0.02em; line-height: 1;">{{ $sudahBayar }}</div>
+                            <div class="mt-2" style="font-size: 12px; color: var(--text4);">Rp {{ number_format($sudahBayar * \App\Models\SystemSetting::getBiayaPendaftaran(), 0, ',', '.') }}</div>
                         </div>
-                        <div id="earning"></div>
+                        <div style="width: 48px; height: 48px; background: #fffbeb; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <i class="ti ti-cash" style="font-size: 22px; color: #f59e0b;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div style="font-size: 12px; font-weight: 500; color: var(--text4); text-transform: uppercase; letter-spacing: .03em; margin-bottom: 6px;">Menunggu</div>
+                            <div style="font-size: 32px; font-weight: 800; color: var(--text); letter-spacing: -0.02em; line-height: 1;">{{ $menungguVerifikasi }}</div>
+                            <div class="mt-2" style="font-size: 12px; color: #ef4444; font-weight: 500;">Perlu ditindaklanjuti</div>
+                        </div>
+                        <div style="width: 48px; height: 48px; background: #fef2f2; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <i class="ti ti-clock" style="font-size: 22px; color: #ef4444;"></i>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
-    <!-- Row 2 -->
-    <div class="row">
-        <div class="col-lg-4 d-flex align-items-stretch">
-            <div class="card w-100">
-                <div class="card-body p-4">
-                    <div class="mb-4">
-                        <h5 class="card-title fw-semibold">Pendaftar per Jurusan</h5>
+
+    <!-- Quick Actions + Status Gelombang -->
+    <div class="row mb-2">
+        <div class="col-lg-8 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="mb-3" style="font-size: 16px; font-weight: 700;">Aksi Cepat</h6>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <a href="{{ route('admin.master-data') }}" style="text-decoration: none;">
+                                <div style="background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 14px; padding: 20px; text-align: center; transition: all .2s;" onmouseover="this.style.borderColor='#6366f1'; this.style.background='#eef2ff'" onmouseout="this.style.borderColor='#e5e7eb'; this.style.background='#f8fafc'">
+                                    <div style="width: 44px; height: 44px; background: #eef2ff; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;">
+                                        <i class="ti ti-database" style="font-size: 20px; color: #6366f1;"></i>
+                                    </div>
+                                    <div style="font-weight: 600; font-size: 13px; color: #0f172a;">Master Data</div>
+                                    <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">Kelola jurusan & gelombang</div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{{ route('admin.monitoring-berkas') }}" style="text-decoration: none;">
+                                <div style="background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 14px; padding: 20px; text-align: center; transition: all .2s;" onmouseover="this.style.borderColor='#10b981'; this.style.background='#ecfdf5'" onmouseout="this.style.borderColor='#e5e7eb'; this.style.background='#f8fafc'">
+                                    <div style="width: 44px; height: 44px; background: #ecfdf5; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;">
+                                        <i class="ti ti-file-check" style="font-size: 20px; color: #10b981;"></i>
+                                    </div>
+                                    <div style="font-weight: 600; font-size: 13px; color: #0f172a;">Monitoring Berkas</div>
+                                    <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">Cek kelengkapan berkas</div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{{ route('admin.pengumuman') }}" style="text-decoration: none;">
+                                <div style="background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 14px; padding: 20px; text-align: center; transition: all .2s;" onmouseover="this.style.borderColor='#f59e0b'; this.style.background='#fffbeb'" onmouseout="this.style.borderColor='#e5e7eb'; this.style.background='#f8fafc'">
+                                    <div style="width: 44px; height: 44px; background: #fffbeb; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;">
+                                        <i class="ti ti-speakerphone" style="font-size: 20px; color: #f59e0b;"></i>
+                                    </div>
+                                    <div style="font-weight: 600; font-size: 13px; color: #0f172a;">Pengumuman</div>
+                                    <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">Atur hasil kelulusan</div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{{ route('admin.users.index') }}" style="text-decoration: none;">
+                                <div style="background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 14px; padding: 20px; text-align: center; transition: all .2s;" onmouseover="this.style.borderColor='#06b6d4'; this.style.background='#ecfeff'" onmouseout="this.style.borderColor='#e5e7eb'; this.style.background='#f8fafc'">
+                                    <div style="width: 44px; height: 44px; background: #ecfeff; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;">
+                                        <i class="ti ti-users" style="font-size: 20px; color: #06b6d4;"></i>
+                                    </div>
+                                    <div style="font-weight: 600; font-size: 13px; color: #0f172a;">Kelola Akun</div>
+                                    <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">Manage user & role</div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{{ route('reports.index') }}" style="text-decoration: none;">
+                                <div style="background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 14px; padding: 20px; text-align: center; transition: all .2s;" onmouseover="this.style.borderColor='#a855f7'; this.style.background='#faf5ff'" onmouseout="this.style.borderColor='#e5e7eb'; this.style.background='#f8fafc'">
+                                    <div style="width: 44px; height: 44px; background: #faf5ff; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;">
+                                        <i class="ti ti-file-export" style="font-size: 20px; color: #a855f7;"></i>
+                                    </div>
+                                    <div style="font-weight: 600; font-size: 13px; color: #0f172a;">Export Laporan</div>
+                                    <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">Download PDF & Excel</div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{{ route('admin.peta-sebaran') }}" style="text-decoration: none;">
+                                <div style="background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 14px; padding: 20px; text-align: center; transition: all .2s;" onmouseover="this.style.borderColor='#ec4899'; this.style.background='#fdf2f8'" onmouseout="this.style.borderColor='#e5e7eb'; this.style.background='#f8fafc'">
+                                    <div style="width: 44px; height: 44px; background: #fdf2f8; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;">
+                                        <i class="ti ti-map" style="font-size: 20px; color: #ec4899;"></i>
+                                    </div>
+                                    <div style="font-weight: 600; font-size: 13px; color: #0f172a;">Peta Sebaran</div>
+                                    <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">Lihat sebaran pendaftar</div>
+                                </div>
+                            </a>
+                        </div>
                     </div>
-                    <ul class="list-unstyled">
-                        <li class="d-flex align-items-center pb-1 mb-2">
-                            <div class="me-3 rounded-circle bg-light-primary round-20 d-flex align-items-center justify-content-center">
-                                <i class="ti ti-point text-primary"></i>
-                            </div>
-                            <div class="d-flex align-items-center justify-content-between w-100">
-                                <div>
-                                    <h6 class="mb-1 fw-semibold">Terverifikasi</h6>
-                                    <p class="fs-2 mb-0 text-muted">{{ $sudahVerifikasi }} pendaftar</p>
-                                </div>
-                                <h6 class="mb-0 fw-semibold">36.5%</h6>
-                            </div>
-                        </li>
-                        <li class="d-flex align-items-center pb-1 mb-2">
-                            <div class="me-3 rounded-circle bg-light-warning round-20 d-flex align-items-center justify-content-center">
-                                <i class="ti ti-point text-warning"></i>
-                            </div>
-                            <div class="d-flex align-items-center justify-content-between w-100">
-                                <div>
-                                    <h6 class="mb-1 fw-semibold">Sudah Bayar</h6>
-                                    <p class="fs-2 mb-0 text-muted">{{ $sudahBayar }} pendaftar</p>
-                                </div>
-                                <h6 class="mb-0 fw-semibold">41.9%</h6>
-                            </div>
-                        </li>
-                        <li class="d-flex align-items-center pb-1 mb-2">
-                            <div class="me-3 rounded-circle bg-light-secondary round-20 d-flex align-items-center justify-content-center">
-                                <i class="ti ti-point text-secondary"></i>
-                            </div>
-                            <div class="d-flex align-items-center justify-content-between w-100">
-                                <div>
-                                    <h6 class="mb-1 fw-semibold">Menunggu</h6>
-                                    <p class="fs-2 mb-0 text-muted">{{ $menungguVerifikasi }} pendaftar</p>
-                                </div>
-                                <h6 class="mb-0 fw-semibold">21.5%</h6>
-                            </div>
-                        </li>
-                    </ul>
                 </div>
             </div>
         </div>
-        <div class="col-lg-8 d-flex align-items-stretch">
-            <div class="card w-100">
-                <div class="card-body p-4">
-                    <h5 class="card-title fw-semibold mb-4">Pendaftar Terbaru</h5>
-                    <div class="table-responsive">
-                        <table class="table text-nowrap mb-0 align-middle">
-                            <thead class="text-dark fs-4">
-                                <tr>
-                                    <th class="border-bottom-0">
-                                        <h6 class="fw-semibold mb-0">No. Pendaftaran</h6>
-                                    </th>
-                                    <th class="border-bottom-0">
-                                        <h6 class="fw-semibold mb-0">Nama</h6>
-                                    </th>
-                                    <th class="border-bottom-0">
-                                        <h6 class="fw-semibold mb-0">Jurusan</h6>
-                                    </th>
-                                    <th class="border-bottom-0">
-                                        <h6 class="fw-semibold mb-0">Status</h6>
-                                    </th>
-                                    <th class="border-bottom-0">
-                                        <h6 class="fw-semibold mb-0">Tanggal</h6>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($pendaftarTerbaru as $p)
-                                <tr>
-                                    <td class="border-bottom-0">
-                                        <h6 class="fw-semibold mb-0">{{ $p->no_pendaftaran }}</h6>
-                                    </td>
-                                    <td class="border-bottom-0">
-                                        <h6 class="fw-semibold mb-1">{{ $p->nama }}</h6>
-                                        <span class="fw-normal">{{ $p->email }}</span>
-                                    </td>
-                                    <td class="border-bottom-0">
-                                        <p class="mb-0 fw-normal">{{ $p->jurusan->nama ?? 'N/A' }}</p>
-                                    </td>
-                                    <td class="border-bottom-0">
-                                        <div class="d-flex align-items-center gap-2">
-                                            @php
-                                                $statusColors = [
-                                                    'PAID' => ['bg' => '#28a745', 'text' => '#fff', 'label' => 'Terbayar'],
-                                                    'ADM_PASS' => ['bg' => '#007bff', 'text' => '#fff', 'label' => 'Terverifikasi'],
-                                                    'SUBMIT' => ['bg' => '#ffc107', 'text' => '#000', 'label' => 'Pending'],
-                                                    'default' => ['bg' => '#dc3545', 'text' => '#fff', 'label' => 'Ditolak']
-                                                ];
-                                                $statusStyle = $statusColors[$p->status] ?? $statusColors['default'];
-                                            @endphp
-                                            <span class="badge rounded-3 fw-semibold" style="background-color: {{ $statusStyle['bg'] }}; color: {{ $statusStyle['text'] }};">{{ $statusStyle['label'] }}</span>
-                                        </div>
-                                    </td>
-                                    <td class="border-bottom-0">
-                                        <h6 class="fw-semibold mb-0 fs-4">{{ $p->created_at->format('d M Y') }}</h6>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="5" class="text-center">Belum ada pendaftar</td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="mb-3" style="font-size: 16px; font-weight: 700;">Status Gelombang</h6>
+                    @foreach($statistikGelombang as $gel)
+                    <div style="padding: 12px; background: #f8fafc; border-radius: 12px; margin-bottom: 8px;">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <span style="font-weight: 600; font-size: 13px; color: var(--text);">{{ $gel->nama }}</span>
+                            @if($gel->status == 'aktif')
+                            <span class="badge bg-success">Aktif</span>
+                            @else
+                            <span class="badge bg-secondary">{{ ucfirst($gel->status) }}</span>
+                            @endif
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between" style="font-size: 12px; color: var(--text3);">
+                            <span>{{ $gel->pendaftar_count ?? $gel->pendaftar->count() ?? 0 }} pendaftar</span>
+                            <span>{{ \Carbon\Carbon::parse($gel->tgl_mulai)->format('d M') }} - {{ \Carbon\Carbon::parse($gel->tgl_selesai)->format('d M Y') }}</span>
+                        </div>
+                    </div>
+                    @endforeach
+
+                    <div style="margin-top: 16px; padding: 14px; background: #0f172a; border-radius: 12px; color: #fff;">
+                        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: #94a3b8; margin-bottom: 4px;">Total Pemasukan</div>
+                        <div class="total-pembayaran" style="font-size: 22px; font-weight: 800; letter-spacing: -0.01em;">
+                            Rp {{ number_format($sudahBayar * \App\Models\SystemSetting::getBiayaPendaftaran(), 0, ',', '.') }}
+                        </div>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Pendaftar Terbaru — Full Width Table -->
+    <div class="card mb-4">
+        <div class="card-body" style="padding: 20px 24px !important;">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <h6 style="font-size: 16px; font-weight: 700; margin-bottom: 2px;">Pendaftar Terbaru</h6>
+                    <span style="font-size: 12px; color: var(--text4);">{{ $totalPendaftar }} total, data pendaftar yang baru masuk</span>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ route('admin.export-excel') }}" class="btn btn-sm btn-secondary">
+                        <i class="ti ti-download"></i> Export
+                    </a>
+                    <a href="{{ route('admin.master-data') }}" class="btn btn-sm btn-primary">
+                        Lihat Semua <i class="ti ti-arrow-right" style="font-size: 14px;"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th>No. Pendaftaran</th>
+                        <th>Nama</th>
+                        <th>Jurusan</th>
+                        <th>Status</th>
+                        <th>Tanggal</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($pendaftarTerbaru as $p)
+                    <tr>
+                        <td style="font-weight: 600; color: #6366f1;">{{ $p->no_pendaftaran }}</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div style="width: 32px; height: 32px; background: #eef2ff; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <span style="font-weight: 600; font-size: 12px; color: #6366f1;">{{ strtoupper(substr($p->nama, 0, 1)) }}</span>
+                                </div>
+                                <div>
+                                    <div style="font-weight: 500;">{{ $p->nama }}</div>
+                                    <div style="font-size: 11px; color: var(--text4);">{{ $p->email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ $p->jurusan->nama ?? 'N/A' }}</td>
+                        <td>
+                            @php
+                                $sc = ['PAID'=>['#ecfdf5','#065f46','Terbayar'], 'ADM_PASS'=>['#e0e7ff','#3730a3','Terverifikasi'], 'SUBMIT'=>['#fffbeb','#92400e','Pending']];
+                                $s = $sc[$p->status] ?? ['#fef2f2','#991b1b','Ditolak'];
+                            @endphp
+                            <span class="badge" style="background: {{ $s[0] }}; color: {{ $s[1] }};">{{ $s[2] }}</span>
+                        </td>
+                        <td style="color: var(--text3);">{{ $p->created_at->format('d M Y') }}</td>
+                        <td>
+                            <a href="{{ route('admin.monitoring-berkas') }}" class="btn btn-sm btn-secondary" style="padding: 4px 10px !important;">
+                                <i class="ti ti-eye" style="font-size: 14px;"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="6" class="text-center" style="padding: 40px 16px !important;">
+                            <i class="ti ti-inbox" style="font-size: 36px; color: var(--text4);"></i>
+                            <p class="mt-2 mb-0" style="color: var(--text4);">Belum ada pendaftar</p>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Data dari controller
-    const trenHarian = @json($trenHarian);
-    const chartData = trenHarian.map(item => item.jumlah);
-    const chartLabels = trenHarian.map(item => {
-        const date = new Date(item.tanggal);
-        return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-    });
-    
-    if (typeof ApexCharts === 'undefined') {
-        console.error('ApexCharts not loaded');
-        return;
-    }
-    
-    const chartElement = document.querySelector('#chart');
-    if (!chartElement) {
-        console.error('Chart element not found');
-        return;
-    }
-    
-    try {
-        const options = {
-            series: [{
-                name: 'Pendaftar',
-                data: chartData
-            }],
-            chart: {
-                type: 'area',
-                height: 350
-            },
-            colors: ['#5D87FF'],
-            xaxis: {
-                categories: chartLabels
-            },
-            yaxis: {
-                min: 0
-            }
-        };
-        
-        const chart = new ApexCharts(chartElement, options);
-        chart.render();
-        
-        // Handle gelombang filter change with AJAX
-        document.getElementById('gelombangFilter').addEventListener('change', function() {
-            const gelombangId = this.value;
-            
-            // Show loading state
-            chartElement.innerHTML = '<div class="text-center p-4"><div class="spinner-border" role="status"></div></div>';
-            
-            // Fetch new data
-            fetch(`{{ route('admin.dashboard') }}?ajax=1&gelombang=${gelombangId}`, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-                .then(response => response.json())
-                .then(data => {
-                    // Update chart
-                    let newChartData, newChartLabels;
-                    
-                    if (data.trenHarian && data.trenHarian.length > 0) {
-                        newChartData = data.trenHarian.map(item => item.jumlah);
-                        newChartLabels = data.trenHarian.map(item => {
-                            const date = new Date(item.tanggal);
-                            return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-                        });
-                    } else {
-                        // No data, show empty chart
-                        newChartData = [0, 0, 0, 0, 0, 0, 0];
-                        newChartLabels = ['Tidak ada data'];
-                    }
-                    
-                    chart.updateOptions({
-                        series: [{
-                            name: 'Pendaftar',
-                            data: newChartData
-                        }],
-                        xaxis: {
-                            categories: newChartLabels
-                        }
-                    });
-                    
-                    // Update KPI numbers
-                    document.querySelector('.total-pendaftar').textContent = data.totalPendaftar || 0;
-                    document.querySelector('.total-pembayaran').textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(data.totalPembayaran || 0);
-                })
-                .catch(error => {
-                    console.error('Error fetching data:', error);
-                    chartElement.innerHTML = '<div class="text-center p-4 text-danger">Error loading data</div>';
-                });
-        });
-        
-    } catch (error) {
-        console.error('Chart error:', error);
-    }
-});
-</script>
-
-<style>
-.pulse-update {
-    animation: pulseUpdate 1s ease-in-out;
-}
-
-@keyframes pulseUpdate {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); color: #28a745; }
-    100% { transform: scale(1); }
-}
-</style>
 @endsection

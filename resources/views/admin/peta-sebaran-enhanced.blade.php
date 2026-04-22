@@ -91,7 +91,7 @@
             <!-- Top Areas -->
             <div class="card">
                 <div class="card-header">
-                    <h6 class="mb-0">🏆 Top 5 Wilayah</h6>
+                    <h6 class="mb-0"><i class="bi bi-trophy-fill text-warning me-1"></i> Top 5 Wilayah</h6>
                 </div>
                 <div class="card-body">
                     <div id="topAreasContent">

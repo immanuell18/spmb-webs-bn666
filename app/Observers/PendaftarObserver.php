@@ -69,56 +69,64 @@ class PendaftarObserver
         }
     }
 
-    private function sendStatusNotification($pendaftar, $newStatus, $oldStatus)
+    private function sendStatusNotification($pendaftar, $newStatus, $oldStatus): void
     {
-        try {
-            $user = $pendaftar->user;
-            if (!$user) return;
+        $user = $pendaftar->user;
+        if (!$user) return;
 
+        try {
             switch ($newStatus) {
                 case 'lulus':
                 case 'tidak_lulus':
                 case 'cadangan':
-                    Mail::to($user->email)->send(new SelectionResultMail($pendaftar, $newStatus));
+                    // queue() memanfaatkan Queueable trait di SelectionResultMail
+                    Mail::to($user->email)->queue(new SelectionResultMail($pendaftar, $newStatus));
                     break;
             }
-        } catch (\Exception $e) {
-            \Log::error('Failed to send status notification: ' . $e->getMessage());
+        } catch (\Throwable $e) {
+            \Log::error('[Observer] Gagal queue status notification: ' . $e->getMessage(), [
+                'pendaftar_id' => $pendaftar->id,
+                'status'       => $newStatus,
+            ]);
         }
     }
 
-    private function sendDocumentStatusNotification($pendaftar, $status)
+    private function sendDocumentStatusNotification($pendaftar, $status): void
     {
-        try {
-            $user = $pendaftar->user;
-            if (!$user) return;
+        $user = $pendaftar->user;
+        if (!$user) return;
 
+        try {
             switch ($status) {
                 case 'ditolak':
                     $reason = $pendaftar->catatan_berkas ?? 'Berkas tidak sesuai persyaratan';
-                    Mail::to($user->email)->send(new DocumentCorrectionMail($pendaftar, $reason));
+                    Mail::to($user->email)->queue(new DocumentCorrectionMail($pendaftar, $reason));
                     break;
                 case 'diterima':
-                    // Kirim instruksi pembayaran
-                    Mail::to($user->email)->send(new PaymentInstructionMail($pendaftar));
+                    Mail::to($user->email)->queue(new PaymentInstructionMail($pendaftar));
                     break;
             }
-        } catch (\Exception $e) {
-            \Log::error('Failed to send document status notification: ' . $e->getMessage());
+        } catch (\Throwable $e) {
+            \Log::error('[Observer] Gagal queue document notification: ' . $e->getMessage(), [
+                'pendaftar_id' => $pendaftar->id,
+                'status'       => $status,
+            ]);
         }
     }
 
-    private function sendPaymentStatusNotification($pendaftar, $status)
+    private function sendPaymentStatusNotification($pendaftar, $status): void
     {
-        try {
-            $user = $pendaftar->user;
-            if (!$user) return;
+        $user = $pendaftar->user;
+        if (!$user) return;
 
+        try {
             if ($status === 'lunas') {
-                Mail::to($user->email)->send(new PaymentConfirmationMail($pendaftar));
+                Mail::to($user->email)->queue(new PaymentConfirmationMail($pendaftar));
             }
-        } catch (\Exception $e) {
-            \Log::error('Failed to send payment status notification: ' . $e->getMessage());
+        } catch (\Throwable $e) {
+            \Log::error('[Observer] Gagal queue payment notification: ' . $e->getMessage(), [
+                'pendaftar_id' => $pendaftar->id,
+            ]);
         }
     }
 

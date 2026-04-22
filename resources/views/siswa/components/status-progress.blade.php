@@ -35,13 +35,13 @@
             <div class="row text-center">
                 <div class="col-3">
                     <div class="step {{ $status == 'SUBMIT' ? 'active' : ($progress > 25 ? 'completed' : '') }}">
-                        <div class="step-icon">📝</div>
+                        <div class="step-icon"><i class="bi bi-pencil-square me-1"></i></div>
                         <small>Submit</small>
                     </div>
                 </div>
                 <div class="col-3">
                     <div class="step {{ $status == 'ADM_PASS' ? 'active' : ($progress > 50 ? 'completed' : '') }}">
-                        <div class="step-icon">✅</div>
+                        <div class="step-icon"><i class="bi bi-check-circle-fill text-success me-1"></i></div>
                         <small>Verifikasi</small>
                     </div>
                 </div>
@@ -61,7 +61,7 @@
 
             @if($statusAkhir)
                 <div class="alert alert-{{ $statusAkhir == 'LULUS' ? 'success' : ($statusAkhir == 'CADANGAN' ? 'warning' : 'danger') }} mt-3">
-                    <h6 class="alert-heading">🎉 Pengumuman Hasil Seleksi</h6>
+                    <h6 class="alert-heading"><i class="bi bi-award-fill text-success me-1"></i> Pengumuman Hasil Seleksi</h6>
                     <p class="mb-0">
                         Status Akhir: <strong>{{ $statusAkhir }}</strong>
                         @if($statusAkhir == 'LULUS')
@@ -77,7 +77,7 @@
 
             @if($status == 'ADM_REJECT')
                 <div class="alert alert-warning mt-3">
-                    <h6 class="alert-heading">⚠️ Berkas Perlu Perbaikan</h6>
+                    <h6 class="alert-heading"><i class="bi bi-exclamation-triangle-fill text-warning me-1"></i> Berkas Perlu Perbaikan</h6>
                     <p class="mb-0">{{ $pendaftar->catatan_admin ?? 'Silakan perbaiki berkas sesuai petunjuk.' }}</p>
                 </div>
             @endif

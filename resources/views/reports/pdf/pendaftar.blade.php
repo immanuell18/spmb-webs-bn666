@@ -1,28 +1,22 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <meta charset="utf-8">
-    <title>{{ $title }}</title>
+    <meta charset="UTF-8">
+    <title>Laporan Data Pendaftar SPMB</title>
     <style>
-        body { font-family: Arial, sans-serif; font-size: 12px; }
-        .header { text-align: center; margin-bottom: 20px; }
-        .header h1 { margin: 0; color: #333; }
-        .header p { margin: 5px 0; color: #666; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; font-weight: bold; }
-        .text-center { text-align: center; }
-        .footer { margin-top: 20px; font-size: 10px; color: #666; }
+        body { font-family: sans-serif; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #000; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        h2, h4 { margin: 0; padding: 0; text-align: center; }
+        .header { margin-bottom: 20px; text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>{{ $title }}</h1>
-        <p>SMK Bakti Nusantara 666</p>
-        <p>Dicetak pada: {{ date('d/m/Y H:i:s') }}</p>
-        @if(!empty($filters['date_from']) || !empty($filters['date_to']))
-            <p>Periode: {{ $filters['date_from'] ?? 'Semua' }} - {{ $filters['date_to'] ?? 'Semua' }}</p>
-        @endif
+        <h2>LEMBAR LAPORAN DATA PENDAFTAR</h2>
+        <h4>Sistem Penerimaan Murid Baru (SPMB)</h4>
+        <p>Tanggal Cetak: {{ now()->translatedFormat('d F Y H:i') }}</p>
     </div>
 
     <table>
@@ -38,31 +32,28 @@
             </tr>
         </thead>
         <tbody>
-            @foreach($data as $index => $pendaftar)
+            @foreach($pendaftar as $index => $p)
             <tr>
-                <td class="text-center">{{ $index + 1 }}</td>
-                <td>{{ $pendaftar->no_pendaftaran }}</td>
-                <td>{{ $pendaftar->nama }}</td>
-                <td>{{ $pendaftar->jurusan->nama ?? '-' }}</td>
-                <td>{{ $pendaftar->gelombang->nama ?? '-' }}</td>
+                <td>{{ $index + 1 }}</td>
+                <td>{{ $p->no_pendaftaran }}</td>
+                <td>{{ $p->nama }}</td>
+                <td>{{ $p->jurusan->nama ?? '-' }}</td>
+                <td>{{ $p->gelombang->nama ?? '-' }}</td>
                 <td>
-                    @switch($pendaftar->status)
-                        @case('SUBMIT') Menunggu Verifikasi @break
-                        @case('ADM_PASS') Berkas Disetujui @break
-                        @case('ADM_REJECT') Berkas Ditolak @break
-                        @case('PAID') Sudah Bayar @break
-                        @default Unknown
-                    @endswitch
+                    @if($p->status == 'PAID')
+                        Sudah Bayar
+                    @elseif($p->status == 'ADM_PASS')
+                        Lolos Administrasi
+                    @elseif($p->status == 'ADM_REJECT')
+                        Ditolak
+                    @else
+                        Menunggu Verifikasi
+                    @endif
                 </td>
-                <td>{{ $pendaftar->created_at->format('d/m/Y') }}</td>
+                <td>{{ $p->created_at->format('d/m/Y') }}</td>
             </tr>
             @endforeach
         </tbody>
     </table>
-
-    <div class="footer">
-        <p>Total: {{ $data->count() }} pendaftar</p>
-        <p>Laporan ini dibuat secara otomatis oleh sistem SPMB SMK Bakti Nusantara 666</p>
-    </div>
 </body>
 </html>

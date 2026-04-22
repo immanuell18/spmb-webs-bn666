@@ -31,7 +31,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
             'password' => 'required|min:6',
-            'role' => 'required|in:admin,keuangan,verifikator,kepsek',
+            'role' => 'required|in:admin,keuangan,verifikator_adm,kepsek',
         ]);
 
         User::create([
@@ -55,13 +55,15 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
-            'role' => 'required|in:admin,keuangan,verifikator,kepsek',
+            'role' => 'required|in:admin,keuangan,verifikator_adm,kepsek,pendaftar',
+            'status' => 'required|boolean',
         ]);
 
         $data = [
             'name' => $request->name,
             'email' => $request->email,
             'role' => $request->role,
+            'status' => $request->status,
         ];
 
         if ($request->password) {

@@ -4,16 +4,20 @@
 
 @section('content')
 <div class="container-fluid">
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Verifikasi Berkas</h1>
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h3 class="mb-1">Verifikasi Berkas</h3>
+            <p class="mb-0" style="color: var(--text3); font-size: 13px;">Filter dan kelola verifikasi berkas pendaftar</p>
+        </div>
     </div>
 
     <!-- Filter -->
-    <div class="card shadow mb-4">
+    <div class="card mb-4">
         <div class="card-body">
-            <form method="GET" class="row">
+            <form method="GET" class="row g-2 align-items-end">
                 <div class="col-md-3">
-                    <select name="status" class="form-control">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
                         <option value="">Semua Status</option>
                         <option value="SUBMIT" {{ request('status') == 'SUBMIT' ? 'selected' : '' }}>Menunggu Verifikasi</option>
                         <option value="ADM_PASS" {{ request('status') == 'ADM_PASS' ? 'selected' : '' }}>Lulus Administrasi</option>
@@ -24,23 +28,27 @@
                         <option value="CADANGAN" {{ request('status') == 'CADANGAN' ? 'selected' : '' }}>CADANGAN</option>
                     </select>
                 </div>
-                <div class="col-md-3">
-                    <input type="text" name="search" class="form-control" placeholder="Cari nama/email..." value="{{ request('search') }}">
+                <div class="col-md-4">
+                    <label class="form-label">Pencarian</label>
+                    <input type="text" name="search" class="form-control" placeholder="Cari nama atau email..." value="{{ request('search') }}">
                 </div>
                 <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary">Filter</button>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="ti ti-filter"></i> Filter
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Daftar Pendaftar untuk Verifikasi</h6>
+    <div class="card mb-4">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <h6 class="m-0 fw-semibold">Daftar Pendaftar</h6>
+            <span class="badge bg-primary">{{ $pendaftar->total() }} data</span>
         </div>
-        <div class="card-body">
+        <div class="card-body" style="padding: 0 !important;">
             <div class="table-responsive">
-                <table class="table table-bordered" width="100%" cellspacing="0">
+                <table class="table mb-0 align-middle">
                     <thead>
                         <tr>
                             <th>No</th>
@@ -48,9 +56,9 @@
                             <th>Nama</th>
                             <th>Email</th>
                             <th>Jurusan</th>
-                            <th>Status Berkas</th>
+                            <th>Berkas</th>
                             <th>Status</th>
-                            <th>Tanggal Daftar</th>
+                            <th>Tanggal</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -58,59 +66,56 @@
                         @forelse($pendaftar as $index => $p)
                         <tr>
                             <td>{{ $pendaftar->firstItem() + $index }}</td>
-                            <td>{{ $p->no_pendaftaran }}</td>
-                            <td>{{ $p->nama }}</td>
-                            <td>{{ $p->email }}</td>
+                            <td style="font-weight: 600; color: var(--p);">{{ $p->no_pendaftaran }}</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div style="width: 30px; height: 30px; background: var(--p-100); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                        <span style="font-weight: 600; font-size: 11px; color: var(--p);">{{ strtoupper(substr($p->nama, 0, 1)) }}</span>
+                                    </div>
+                                    <span style="font-weight: 500;">{{ $p->nama }}</span>
+                                </div>
+                            </td>
+                            <td style="color: var(--text3);">{{ $p->email }}</td>
                             <td>{{ $p->jurusan->nama ?? '-' }}</td>
                             <td>
                                 @php
-                                    $berkasStatus = $p->getBerkasStatus();
-                                    $badgeClass = 'secondary';
-                                    if (str_contains($berkasStatus, 'Lengkap')) {
-                                        $badgeClass = 'success';
-                                    } elseif (str_contains($berkasStatus, 'Belum Lengkap')) {
-                                        $badgeClass = 'warning';
-                                    }
+                                    $bs = $p->getBerkasStatus();
+                                    $bBg = str_contains($bs, 'Lengkap') ? 'var(--ok-light)' : (str_contains($bs, 'Belum') ? 'var(--warn-light)' : 'var(--bg2)');
+                                    $bTx = str_contains($bs, 'Lengkap') ? '#065f46' : (str_contains($bs, 'Belum') ? '#92400e' : 'var(--text3)');
                                 @endphp
-                                <span class="badge badge-{{ $badgeClass }} text-dark">{{ $berkasStatus }}</span>
+                                <span class="badge" style="background: {{ $bBg }}; color: {{ $bTx }};">{{ $bs }}</span>
                             </td>
                             <td>
                                 @php
-                                    $statusColor = $p->getStatusBadgeColor();
-                                    $bgColor = match($statusColor) {
-                                        'success' => '#28a745',
-                                        'danger' => '#dc3545', 
-                                        'warning' => '#ffc107',
-                                        'info' => '#17a2b8',
-                                        'primary' => '#007bff',
-                                        default => '#6c757d'
-                                    };
-                                    $textColor = in_array($statusColor, ['warning']) ? '#000' : '#fff';
+                                    $sc = $p->getStatusBadgeColor();
+                                    $sBg = match($sc) { 'success'=>'var(--ok-light)', 'danger'=>'var(--err-light)', 'warning'=>'var(--warn-light)', 'info'=>'var(--info-light)', 'primary'=>'var(--p-100)', default=>'var(--bg2)' };
+                                    $sTx = match($sc) { 'success'=>'#065f46', 'danger'=>'#991b1b', 'warning'=>'#92400e', 'info'=>'#155e75', 'primary'=>'var(--p-dark)', default=>'var(--text3)' };
                                 @endphp
-                                <span class="badge" style="background-color: {{ $bgColor }}; color: {{ $textColor }}; font-weight: bold;">
-                                    {{ $p->getStatusLabel() }}
-                                </span>
+                                <span class="badge" style="background: {{ $sBg }}; color: {{ $sTx }};">{{ $p->getStatusLabel() }}</span>
                             </td>
-                            <td>{{ $p->created_at->format('d M Y') }}</td>
+                            <td style="color: var(--text3);">{{ $p->created_at->format('d M Y') }}</td>
                             <td>
                                 <a href="{{ route('verifikator.detail', $p->id) }}" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-eye"></i> Verifikasi
+                                    <i class="ti ti-eye"></i> Detail
                                 </a>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="9" class="text-center">Belum ada data pendaftar</td>
+                            <td colspan="9" class="text-center" style="padding: 40px 14px !important;">
+                                <i class="ti ti-inbox" style="font-size: 36px; color: var(--text4);"></i>
+                                <p class="mt-2 mb-0" style="color: var(--text4);">Tidak ada data pendaftar</p>
+                            </td>
                         </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
-            
-            <!-- Pagination -->
-            <div class="d-flex justify-content-center">
+            @if($pendaftar->hasPages())
+            <div class="d-flex justify-content-center" style="padding: 16px;">
                 {{ $pendaftar->appends(request()->query())->links() }}
             </div>
+            @endif
         </div>
     </div>
 </div>

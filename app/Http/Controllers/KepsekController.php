@@ -28,7 +28,7 @@ class KepsekController extends Controller
         $totalPendaftar = $pendaftarQuery->count();
         $totalKuota = Jurusan::sum('kuota');
         $rasioTerverifikasi = $totalPendaftar > 0 ? 
-            round(($pendaftarQuery->whereIn('status', ['ADM_PASS', 'PAID'])->count() / $totalPendaftar) * 100, 1) : 0;
+            round(((clone $pendaftarQuery)->whereIn('status', ['ADM_PASS', 'PAID'])->count() / $totalPendaftar) * 100, 1) : 0;
         $progressKuota = $totalKuota > 0 ? round(($totalPendaftar / $totalKuota) * 100, 1) : 0;
         
         // Tren harian dengan indikator performa
@@ -65,23 +65,37 @@ class KepsekController extends Controller
             ->get();
         
         // Pendaftar vs Kuota per jurusan
-        $jurusanStats = Jurusan::withCount(['pendaftar' => function($query) use ($gelombangFilter) {
-            if ($gelombangFilter) {
-                $query->where('gelombang_id', $gelombangFilter);
+        $jurusanStats = Jurusan::withCount([
+            'pendaftar' => function($query) use ($gelombangFilter) {
+                if ($gelombangFilter) {
+                    $query->where('gelombang_id', $gelombangFilter);
+                }
+            },
+            'pendaftar as terverifikasi_count' => function($query) use ($gelombangFilter) {
+                $query->whereIn('status', ['ADM_PASS', 'PAID']);
+                if ($gelombangFilter) {
+                    $query->where('gelombang_id', $gelombangFilter);
+                }
             }
-        }])
-        ->get()
-        ->map(function($item) {
-            $item->rasio = $item->kuota > 0 ? round(($item->pendaftar_count / $item->kuota) * 100, 1) : 0;
-            return $item;
+        ])->get();
+
+        $perJurusan = $jurusanStats->map(function($item) {
+            return [
+                'nama' => $item->nama,
+                'kuota' => $item->kuota,
+                'pendaftar' => $item->pendaftar_count,
+                'terverifikasi' => $item->terverifikasi_count,
+            ];
         });
         
         // KPI array untuk view
         $kpi = [
             'total_pendaftar' => $totalPendaftar,
             'total_kuota' => $totalKuota,
-            'terverifikasi' => Pendaftar::whereIn('status', ['ADM_PASS', 'PAID'])->count(),
-            'rasio_terverifikasi' => $rasioTerverifikasi
+            'terverifikasi' => (clone $pendaftarQuery)->whereIn('status', ['ADM_PASS', 'PAID'])->count(),
+            'rasio_terverifikasi' => $rasioTerverifikasi,
+            'sudah_bayar' => (clone $pendaftarQuery)->where('status', 'PAID')->count(),
+            'total_pemasukan' => (clone $pendaftarQuery)->where('status', 'PAID')->sum('biaya_pendaftaran'),
         ];
         
         // Komposisi jurusan untuk chart
@@ -91,7 +105,7 @@ class KepsekController extends Controller
             'totalPendaftar', 'totalKuota', 'rasioTerverifikasi', 'progressKuota',
             'trenHarian', 'avgHarian', 'trenToday', 'performanceIndicator',
             'asalSekolah', 'sebaranWilayah', 'statusDistribusi', 'jurusanStats',
-            'kpi', 'komposisiJurusan'
+            'kpi', 'komposisiJurusan', 'perJurusan'
         ));
     }
 
@@ -101,9 +115,9 @@ class KepsekController extends Controller
         
         $laporan = [
             'total_pendaftar' => Pendaftar::count(),
-            'rasio_verifikasi' => Pendaftar::where('status', 'ADM_PASS')->count() / max(Pendaftar::count(), 1) * 100,
-            'rasio_pembayaran' => Pendaftar::where('status_pembayaran', 'terbayar')->count() / max(Pendaftar::count(), 1) * 100,
-            'total_pemasukan' => Pendaftar::where('status_pembayaran', 'terbayar')->sum('biaya_pendaftaran'),
+            'rasio_verifikasi' => Pendaftar::whereIn('status', ['ADM_PASS', 'PAID'])->count() / max(Pendaftar::count(), 1) * 100,
+            'rasio_pembayaran' => Pendaftar::where('status', 'PAID')->count() / max(Pendaftar::count(), 1) * 100,
+            'total_pemasukan' => Pendaftar::where('status', 'PAID')->sum('biaya_pendaftaran'),
         ];
 
         return view('kepsek.laporan-eksekutif', compact('gelombang', 'laporan'));
@@ -115,9 +129,9 @@ class KepsekController extends Controller
         
         $laporan = [
             'total_pendaftar' => Pendaftar::count(),
-            'rasio_verifikasi' => Pendaftar::where('status', 'ADM_PASS')->count() / max(Pendaftar::count(), 1) * 100,
-            'rasio_pembayaran' => Pendaftar::where('status_pembayaran', 'terbayar')->count() / max(Pendaftar::count(), 1) * 100,
-            'total_pemasukan' => Pendaftar::where('status_pembayaran', 'terbayar')->sum('biaya_pendaftaran'),
+            'rasio_verifikasi' => Pendaftar::whereIn('status', ['ADM_PASS', 'PAID'])->count() / max(Pendaftar::count(), 1) * 100,
+            'rasio_pembayaran' => Pendaftar::where('status', 'PAID')->count() / max(Pendaftar::count(), 1) * 100,
+            'total_pemasukan' => Pendaftar::where('status', 'PAID')->sum('biaya_pendaftaran'),
         ];
 
         $pdf = Pdf::loadView('reports.pdf.laporan-eksekutif', compact('gelombang', 'laporan'))

@@ -4,122 +4,88 @@
 
 @section('content')
 <div class="container-fluid">
-    <div class="card">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="card-title fw-semibold mb-0">Monitoring Berkas Pendaftar</h5>
-                <div class="d-flex gap-2">
-                    <a href="{{ route('admin.export-excel') }}" class="btn btn-success">
-                        <i class="ti ti-download"></i> Export Excel
-                    </a>
-                    <a href="{{ route('admin.export-pdf') }}" class="btn btn-primary">
-                        <i class="ti ti-file-text"></i> Export PDF
-                    </a>
-                </div>
-            </div>
-            
-            <!-- Filter Section -->
-            <form method="GET" action="{{ route('admin.monitoring-berkas') }}">
-                <div class="row mb-4">
-                    <div class="col-md-3">
-                        <select class="form-select" name="jurusan" onchange="this.form.submit()">
-                            <option value="">Semua Jurusan</option>
-                            @foreach($jurusan ?? [] as $j)
-                                <option value="{{ $j->id }}" {{ request('jurusan') == $j->id ? 'selected' : '' }}>{{ $j->nama }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <select class="form-select" name="gelombang" onchange="this.form.submit()">
-                            <option value="">Semua Gelombang</option>
-                            @foreach($gelombang ?? [] as $g)
-                                <option value="{{ $g->id }}" {{ request('gelombang') == $g->id ? 'selected' : '' }}>{{ $g->nama }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <select class="form-select" name="status" onchange="this.form.submit()">
-                            <option value="">Semua Status</option>
-                            <option value="SUBMIT" {{ request('status') == 'SUBMIT' ? 'selected' : '' }}>Submit</option>
-                            <option value="ADM_PASS" {{ request('status') == 'ADM_PASS' ? 'selected' : '' }}>Lolos Administrasi</option>
-                            <option value="ADM_REJECT" {{ request('status') == 'ADM_REJECT' ? 'selected' : '' }}>Ditolak Administrasi</option>
-                            <option value="PAID" {{ request('status') == 'PAID' ? 'selected' : '' }}>Sudah Bayar</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <input type="text" class="form-control" name="search" value="{{ request('search') }}" placeholder="Cari nama/no pendaftaran...">
-                    </div>
-                </div>
-            </form>
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0 fw-bold text-gray-800"><i class="ti ti-file-analytics text-primary me-2"></i> Monitoring Berkas</h4>
+        <div class="d-flex gap-2">
+            <a href="{{ route('admin.export-excel') }}" class="btn btn-success shadow-sm">
+                <i class="ti ti-file-spreadsheet"></i> Export Excel
+            </a>
+            <a href="{{ route('admin.export-pdf') }}" class="btn btn-danger shadow-sm">
+                <i class="ti ti-file-description"></i> Export PDF
+            </a>
+        </div>
+    </div>
             
             <!-- Statistics Cards -->
-            <div class="row mb-4">
+            <div class="row g-3 mb-4">
+                @php
+                $statCards = [
+                    ['color'=>'primary','icon'=>'ti-users','value'=>$totalPendaftar ?? 0,'desc'=>'Total Pendaftar'],
+                    ['color'=>'success','icon'=>'ti-file-check','value'=>$berkasLengkap ?? 0,'desc'=>'Berkas Lengkap'],
+                    ['color'=>'warning','icon'=>'ti-clock','value'=>$pendingReview ?? 0,'desc'=>'Pending Review'],
+                    ['color'=>'danger','icon'=>'ti-file-x','value'=>$tidakLengkap ?? 0,'desc'=>'Tidak Lengkap'],
+                ];
+                @endphp
+                @foreach($statCards as $sc)
                 <div class="col-md-3">
-                    <div class="card bg-primary text-white">
+                    <div class="card h-100 shadow-sm border-0">
                         <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h4 class="text-white">{{ $totalPendaftar ?? 0 }}</h4>
-                                    <p class="mb-0">Total Pendaftar</p>
-                                </div>
-                                <div class="align-self-center">
-                                    <i class="ti ti-users fs-6"></i>
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div class="text-xs text-uppercase fw-bold text-{{ $sc['color'] }}">{{ $sc['desc'] }}</div>
+                                <div style="width:36px;height:36px;background:var(--{{ $sc['color'] }}-bg, #f3f4f6);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                                    <i class="ti {{ $sc['icon'] }} text-{{ $sc['color'] }}" style="font-size:18px;"></i>
                                 </div>
                             </div>
+                            <div class="h5" style="color:var(--text);font-size:28px;font-weight:800;margin:0;">{{ $sc['value'] }}</div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="card bg-success text-white">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h4 class="text-white">{{ $berkasLengkap ?? 0 }}</h4>
-                                    <p class="mb-0">Berkas Lengkap</p>
-                                </div>
-                                <div class="align-self-center">
-                                    <i class="ti ti-file-check fs-6"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card bg-warning text-white">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h4 class="text-white">{{ $pendingReview ?? 0 }}</h4>
-                                    <p class="mb-0">Pending Review</p>
-                                </div>
-                                <div class="align-self-center">
-                                    <i class="ti ti-clock fs-6"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card bg-danger text-white">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h4 class="text-white">{{ $tidakLengkap ?? 0 }}</h4>
-                                    <p class="mb-0">Tidak Lengkap</p>
-                                </div>
-                                <div class="align-self-center">
-                                    <i class="ti ti-file-x fs-6"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                @endforeach
             </div>
-            
-            <!-- Data Table -->
-            <div class="table-responsive">
-                <table class="table table-striped table-hover">
-                    <thead class="table-dark">
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <!-- Filter Section -->
+                    <form method="GET" action="{{ route('admin.monitoring-berkas') }}" class="mb-4">
+                        <div class="row g-2">
+                            <div class="col-md-3">
+                                <select class="form-select bg-light border-0" name="jurusan" onchange="this.form.submit()">
+                                    <option value="">Semua Jurusan</option>
+                                    @foreach($jurusan ?? [] as $j)
+                                        <option value="{{ $j->id }}" {{ request('jurusan') == $j->id ? 'selected' : '' }}>{{ $j->nama }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select bg-light border-0" name="gelombang" onchange="this.form.submit()">
+                                    <option value="">Semua Gelombang</option>
+                                    @foreach($gelombang ?? [] as $g)
+                                        <option value="{{ $g->id }}" {{ request('gelombang') == $g->id ? 'selected' : '' }}>{{ $g->nama }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select bg-light border-0" name="status" onchange="this.form.submit()">
+                                    <option value="">Semua Status</option>
+                                    <option value="SUBMIT" {{ request('status') == 'SUBMIT' ? 'selected' : '' }}>Submit / Pending</option>
+                                    <option value="ADM_PASS" {{ request('status') == 'ADM_PASS' ? 'selected' : '' }}>Lolos Administrasi</option>
+                                    <option value="ADM_REJECT" {{ request('status') == 'ADM_REJECT' ? 'selected' : '' }}>Ditolak Administrasi</option>
+                                    <option value="PAID" {{ request('status') == 'PAID' ? 'selected' : '' }}>Sudah Bayar</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="input-group">
+                                    <input type="text" class="form-control bg-light border-0" name="search" value="{{ request('search') }}" placeholder="Cari Pendaftar...">
+                                    <button class="btn btn-primary" type="submit"><i class="ti ti-search"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
                         <tr>
                             <th>No. Pendaftaran</th>
                             <th>Nama Lengkap</th>
@@ -169,10 +135,13 @@
                                         $text = 'Ditolak';
                                     }
                                 @endphp
-                                <div class="progress" style="height: 20px;">
-                                    <div class="progress-bar bg-{{ $color }}" style="width: {{ $progress }}%">{{ $progress }}%</div>
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <small class="text-{{ $color }} fw-bold" style="font-size: 11px;">{{ $text }}</small>
+                                    <small class="text-muted fw-bold" style="font-size: 10px;">{{ $progress }}%</small>
                                 </div>
-                                <small class="text-{{ $color }}">{{ $text }}</small>
+                                <div class="progress" style="height: 6px; border-radius: 10px; background-color: var(--border-light);">
+                                    <div class="progress-bar bg-{{ $color }}" style="width: {{ $progress }}%; border-radius: 10px;"></div>
+                                </div>
                             </td>
                             <td>
                                 @php
@@ -188,12 +157,14 @@
                             </td>
                             <td>{{ $p->created_at->format('d M Y') }}</td>
                             <td>
-                                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#detailModal{{ $p->id }}">
-                                    <i class="ti ti-eye"></i>
-                                </button>
-                                <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#verifikasiModal{{ $p->id }}">
-                                    <i class="ti ti-check"></i>
-                                </button>
+                                <div class="d-flex gap-1">
+                                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#detailModal{{ $p->id }}" title="Lihat Detail">
+                                        <i class="ti ti-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#verifikasiModal{{ $p->id }}" title="Verifikasi">
+                                        <i class="ti ti-check"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         @empty

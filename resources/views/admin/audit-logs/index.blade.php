@@ -6,7 +6,7 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
-            <h1 class="h3 mb-4">🔍 Audit Logs</h1>
+            <h1 class="h3 mb-4"><i class="bi bi-search me-1"></i> Audit Logs</h1>
         </div>
     </div>
 

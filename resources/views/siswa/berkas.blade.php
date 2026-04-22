@@ -201,8 +201,8 @@
                                     <div class="modal-body">
                                         <input type="hidden" name="jenis_berkas" id="hiddenJenisBerkas">
                                         <div class="mb-3">
-                                            <label class="form-label">Pilih File (PDF/JPG/PNG, Max 2MB)</label>
-                                            <input type="file" class="form-control" name="file" accept=".pdf,.jpg,.jpeg,.png" onchange="previewSelectedFile(this)" required>
+                                            <label class="form-label" id="fileLabel">Pilih File (PDF/JPG/PNG, Max 2MB)</label>
+                                            <input type="file" id="modalFileInput" class="form-control" name="file" accept=".pdf,.jpg,.jpeg,.png" onchange="previewSelectedFile(this)" required>
                                         </div>
                                         <div id="filePreview" class="mb-3" style="display: none;">
                                             <div class="alert alert-info">
@@ -267,9 +267,9 @@
                                 </div>
                                 <small>
                                     @if($progress >= 100)
-                                        ✅ Semua berkas wajib sudah lengkap! Menunggu verifikasi administrasi.
+                                        <i class="bi bi-check-circle-fill text-success me-1"></i> Semua berkas wajib sudah lengkap! Menunggu verifikasi administrasi.
                                     @else
-                                        📋 Upload {{ 4 - $wajibCount }} berkas wajib lagi untuk melengkapi persyaratan.
+                                        <i class="bi bi-clipboard-data text-warning me-1"></i> Upload {{ 4 - $wajibCount }} berkas wajib lagi untuk melengkapi persyaratan.
                                     @endif
                                 </small>
                             </div>
@@ -277,7 +277,7 @@
                             @if($pendaftar->status_berkas == 'lengkap')
                             <div class="alert alert-success">
                                 <h6><i class="fa fa-thumbs-up me-2"></i>Langkah Selanjutnya:</h6>
-                                <p class="mb-2">✅ Berkas Anda sudah lengkap dan sedang menunggu verifikasi</p>
+                                <p class="mb-2"><i class="bi bi-check-circle-fill text-success me-1"></i> Berkas Anda sudah lengkap dan sedang menunggu verifikasi</p>
                                 <p class="mb-0">📞 Kami akan menghubungi Anda jika ada berkas yang perlu diperbaiki</p>
                                 <hr>
                                 <a href="{{ route('siswa.status') }}" class="btn btn-success btn-sm">
@@ -308,6 +308,19 @@
         
         document.getElementById('modalJenisBerkas').textContent = jenisLabels[jenisBerkas];
         document.getElementById('hiddenJenisBerkas').value = jenisBerkas;
+        
+        // Dynamically adjust accepted file types for "foto"
+        const fileInput = document.getElementById('modalFileInput');
+        const fileLabel = document.getElementById('fileLabel');
+        
+        if (jenisBerkas === 'foto') {
+            fileInput.accept = ".jpg,.jpeg,.png";
+            fileLabel.innerHTML = "Pilih File Gambar (JPG/PNG, Max 2MB)";
+            fileInput.value = ""; // Reset in case they had a PDF selected
+        } else {
+            fileInput.accept = ".pdf,.jpg,.jpeg,.png";
+            fileLabel.innerHTML = "Pilih File (PDF/JPG/PNG, Max 2MB)";
+        }
         
         const modal = new bootstrap.Modal(document.getElementById('uploadModal'));
         modal.show();

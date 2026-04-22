@@ -8,6 +8,10 @@ return new class extends Migration
     public function up(): void
     {
         // Add sample coordinates for demo purposes
+        if (!Schema::hasTable('pendaftar_data_siswa')) {
+            return; // Tabel belum ada, skip
+        }
+
         $sampleCoordinates = [
             // Jakarta area coordinates
             [-6.2088, 106.8456], // Jakarta Pusat

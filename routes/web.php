@@ -19,19 +19,19 @@ Route::get('/dashboard', [App\Http\Controllers\RoleRedirectController::class, 'r
 
 // Authentication Routes
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-Route::post('/register', [AuthController::class, 'register']);
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,5');   // maks 5x per 5 menit per IP
 Route::get('/verify-otp', [AuthController::class, 'showOtpVerify'])->name('otp.verify');
-Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
-Route::post('/resend-otp', [AuthController::class, 'resendOtp'])->name('otp.resend');
+Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->middleware('throttle:10,1');
+Route::post('/resend-otp', [AuthController::class, 'resendOtp'])->middleware('throttle:3,5')->name('otp.resend');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Password Reset Routes (OTP-based for pendaftar only)
 Route::get('/forgot-password', [App\Http\Controllers\ForgotPasswordController::class, 'showForgotForm'])->name('password.request');
 Route::post('/forgot-password', [App\Http\Controllers\ForgotPasswordController::class, 'sendOtp'])->name('password.send-otp');
 Route::get('/verify-password-otp', [App\Http\Controllers\ForgotPasswordController::class, 'showVerifyOtpForm'])->name('password.verify-otp');
-Route::post('/verify-password-otp', [App\Http\Controllers\ForgotPasswordController::class, 'verifyOtp'])->name('password.verify-otp');
+Route::post('/verify-password-otp', [App\Http\Controllers\ForgotPasswordController::class, 'verifyOtp'])->name('password.verify-otp.submit');
 Route::get('/reset-password', [App\Http\Controllers\ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
 Route::post('/reset-password', [App\Http\Controllers\ForgotPasswordController::class, 'resetPassword'])->name('password.update');
 
@@ -152,12 +152,15 @@ Route::get('/pendaftaran', function () {
 Route::get('/jurusan', [App\Http\Controllers\AdminController::class, 'jurusanPublic'])->name('jurusan');
 
 // Admin Routes
+Route::middleware(['auth'])->group(function () {
+    // Shared backend profile route
+    Route::get('/admin/profile', [App\Http\Controllers\AdminController::class, 'profile'])->name('admin.profile');
+});
+
 Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::get('/admin', [App\Http\Controllers\AdminController::class, 'dashboard'])->name('admin.dashboard');
+    Route::get('/admin', [App\Http\Controllers\AdminController::class, 'dashboard'])->name('admin.home');
     Route::get('/admin/master-data', [App\Http\Controllers\AdminController::class, 'masterData'])->name('admin.master-data');
     Route::get('/admin/monitoring-berkas', [App\Http\Controllers\AdminController::class, 'monitoringBerkas'])->name('admin.monitoring-berkas');
-    Route::get('/admin/peta-sebaran', [App\Http\Controllers\AdminController::class, 'petaSebaran'])->name('admin.peta-sebaran');
-    Route::get('/admin/profile', [App\Http\Controllers\AdminController::class, 'profile'])->name('admin.profile');
 });
 
 Route::get('/admin/login', function () {
@@ -168,43 +171,47 @@ Route::get('/admin/register', function () {
     return view('admin.register');
 })->name('admin.register');
 
-// Admin CRUD Routes
+// Admin CRUD Routes — masing-masing resource punya controller tersendiri
 Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::post('/admin/jurusan', [App\Http\Controllers\AdminController::class, 'storeJurusan'])->name('admin.jurusan.store');
-    Route::put('/admin/jurusan/{id}', [App\Http\Controllers\AdminController::class, 'updateJurusan'])->name('admin.jurusan.update');
-    Route::delete('/admin/jurusan/{id}', [App\Http\Controllers\AdminController::class, 'deleteJurusan'])->name('admin.jurusan.delete');
 
-    Route::post('/admin/gelombang', [App\Http\Controllers\AdminController::class, 'storeGelombang'])->name('admin.gelombang.store');
-    Route::put('/admin/gelombang/{id}', [App\Http\Controllers\AdminController::class, 'updateGelombang'])->name('admin.gelombang.update');
-    Route::delete('/admin/gelombang/{id}', [App\Http\Controllers\AdminController::class, 'deleteGelombang'])->name('admin.gelombang.delete');
-    Route::patch('/admin/gelombang/{id}/toggle-status', [App\Http\Controllers\AdminController::class, 'toggleGelombangStatus'])->name('admin.gelombang.toggle-status');
+    // Jurusan → Admin\JurusanController
+    Route::post('/admin/jurusan',        [App\Http\Controllers\Admin\JurusanController::class, 'store'])->name('admin.jurusan.store');
+    Route::put('/admin/jurusan/{id}',    [App\Http\Controllers\Admin\JurusanController::class, 'update'])->name('admin.jurusan.update');
+    Route::delete('/admin/jurusan/{id}',[App\Http\Controllers\Admin\JurusanController::class, 'destroy'])->name('admin.jurusan.delete');
 
-    Route::post('/admin/persyaratan', [App\Http\Controllers\AdminController::class, 'storePersyaratan'])->name('admin.persyaratan.store');
-    Route::put('/admin/persyaratan/{id}', [App\Http\Controllers\AdminController::class, 'updatePersyaratan'])->name('admin.persyaratan.update');
-    Route::delete('/admin/persyaratan/{id}', [App\Http\Controllers\AdminController::class, 'deletePersyaratan'])->name('admin.persyaratan.delete');
+    // Gelombang CRUD → Route::resource sudah terdaftar di blok atas (GelombangController)
+    // Tidak perlu routes tambahan di sini — hapus duplikat untuk menghindari konflik nama.
 
-    Route::post('/admin/wilayah', [App\Http\Controllers\AdminController::class, 'storeWilayah'])->name('admin.wilayah.store');
-    Route::put('/admin/wilayah/{id}', [App\Http\Controllers\AdminController::class, 'updateWilayah'])->name('admin.wilayah.update');
-    Route::delete('/admin/wilayah/{id}', [App\Http\Controllers\AdminController::class, 'deleteWilayah'])->name('admin.wilayah.delete');
-    Route::get('/admin/wilayah/{id}/delete', [App\Http\Controllers\AdminController::class, 'deleteWilayah'])->name('admin.wilayah.delete.get');
+    // Persyaratan → Admin\PersyaratanController
+    Route::post('/admin/persyaratan',           [App\Http\Controllers\Admin\PersyaratanController::class, 'store'])->name('admin.persyaratan.store');
+    Route::put('/admin/persyaratan/{persyaratan}',  [App\Http\Controllers\Admin\PersyaratanController::class, 'update'])->name('admin.persyaratan.update');
+    Route::delete('/admin/persyaratan/{persyaratan}',[App\Http\Controllers\Admin\PersyaratanController::class, 'destroy'])->name('admin.persyaratan.delete');
 
-    Route::post('/admin/verifikasi-berkas/{id}', [App\Http\Controllers\AdminController::class, 'verifikasiBerkas'])->name('admin.verifikasi-berkas');
+    // Wilayah — data dari emsifa API (lihat WilayahApiController)
+    // Legacy CRUD manual dihapus karena data wilayah diambil dari API eksternal.
+    // Gunakan endpoint: GET /api/wilayah/provinsi, /kabupaten/{id}, /kecamatan/{id}, dst.
+
+    // Verifikasi Berkas → Admin\VerifikasiController
+    Route::post('/admin/verifikasi-berkas/{id}', [App\Http\Controllers\Admin\VerifikasiController::class, 'update'])->name('admin.verifikasi-berkas');
+
+    // Export
     Route::get('/admin/export-excel', [App\Http\Controllers\AdminController::class, 'exportExcel'])->name('admin.export-excel');
-    Route::get('/admin/export-pdf', [App\Http\Controllers\AdminController::class, 'exportPdf'])->name('admin.export-pdf');
+    Route::get('/admin/export-pdf',   [App\Http\Controllers\AdminController::class, 'exportPdf'])->name('admin.export-pdf');
+
+    // Pengumuman → Admin\PengumumanController
+    Route::get('/admin/pengumuman',          [App\Http\Controllers\Admin\PengumumanController::class, 'index'])->name('admin.pengumuman');
+    Route::post('/admin/pengumuman/{id}',    [App\Http\Controllers\Admin\PengumumanController::class, 'set'])->name('admin.pengumuman.set');
 });
 
-// Pengumuman routes
-Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::get('/admin/pengumuman', [App\Http\Controllers\AdminController::class, 'pengumuman'])->name('admin.pengumuman');
-    Route::post('/admin/pengumuman/{id}', [App\Http\Controllers\AdminController::class, 'setPengumuman'])->name('admin.pengumuman.set');
+// API Routes untuk Wilayah Indonesia (proxy ke emsifa API + cache)
+Route::prefix('api/wilayah')->name('api.wilayah.')->group(function () {
+    Route::get('/provinsi',                                    [App\Http\Controllers\WilayahApiController::class, 'getProvinsi'])->name('provinsi');
+    Route::get('/kabupaten/{provinsi}',                        [App\Http\Controllers\WilayahApiController::class, 'getKabupaten'])->name('kabupaten');
+    Route::get('/kecamatan/{provinsi}/{kabupaten}',            [App\Http\Controllers\WilayahApiController::class, 'getKecamatan'])->name('kecamatan');
+    Route::get('/kelurahan/{provinsi}/{kabupaten}/{kecamatan}', [App\Http\Controllers\WilayahApiController::class, 'getKelurahan'])->name('kelurahan');
+    Route::get('/search',                                      [App\Http\Controllers\WilayahApiController::class, 'searchWilayah'])->name('search');
+    Route::get('/prefetch/{provinsiId}',                       [App\Http\Controllers\WilayahApiController::class, 'prefetchProvinsi'])->name('prefetch')->middleware('auth');
 });
-
-// API Routes untuk Wilayah
-Route::get('/api/wilayah/provinsi', [App\Http\Controllers\WilayahApiController::class, 'getProvinsi']);
-Route::get('/api/wilayah/kabupaten/{provinsi}', [App\Http\Controllers\WilayahApiController::class, 'getKabupaten']);
-Route::get('/api/wilayah/kecamatan/{provinsi}/{kabupaten}', [App\Http\Controllers\WilayahApiController::class, 'getKecamatan']);
-Route::get('/api/wilayah/kelurahan/{provinsi}/{kabupaten}/{kecamatan}', [App\Http\Controllers\WilayahApiController::class, 'getKelurahan']);
-Route::get('/api/wilayah/search', [App\Http\Controllers\WilayahApiController::class, 'searchWilayah']);
 
 // API Routes untuk Map
 Route::get('/api/map/data', [App\Http\Controllers\MapController::class, 'getMapData']);
@@ -244,6 +251,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         $gelombang = \App\Models\Gelombang::all();
         return view('admin.peta-sebaran-enhanced', compact('jurusan', 'gelombang'));
     })->name('admin.peta-sebaran.enhanced');
+    Route::get('/admin/peta-sebaran-lama', [App\Http\Controllers\AdminController::class, 'petaSebaran'])->name('admin.peta-sebaran.lama');
 });
 
 // Report Routes
@@ -273,15 +281,14 @@ Route::post('/webhook/midtrans', [App\Http\Controllers\PaymentController::class,
 
 // Admin Payment Routes
 Route::middleware(['auth', 'role:admin,keuangan'])->group(function () {
-    Route::get('/admin/payment/dashboard', [App\Http\Controllers\PaymentController::class, 'dashboard'])->name('admin.payment.dashboard');
+    Route::get('/admin/payment/dashboard', [App\Http\Controllers\PaymentController::class, 'adminDashboard'])->name('admin.payment.dashboard');
     Route::get('/admin/payment', [App\Http\Controllers\PaymentController::class, 'adminIndex'])->name('admin.payment.index');
     Route::get('/admin/payment/{transaction}', [App\Http\Controllers\PaymentController::class, 'adminShow'])->name('admin.payment.show');
     Route::post('/admin/payment/{transaction}/refund', [App\Http\Controllers\PaymentController::class, 'adminRefund'])->name('admin.payment.refund');
 });
 
-// Advanced Dashboard Routes
+// Dashboard utility routes
 Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::get('/admin/dashboard-advanced', [App\Http\Controllers\DashboardController::class, 'adminDashboard'])->name('dashboard.admin-advanced');
     Route::get('/dashboard/refresh-cache', [App\Http\Controllers\DashboardController::class, 'refreshCache'])->name('dashboard.refresh-cache');
     Route::get('/dashboard/export-executive-pdf', [App\Http\Controllers\DashboardController::class, 'exportExecutivePdf'])->name('dashboard.export-executive-pdf');
     Route::get('/dashboard/system-health', [App\Http\Controllers\DashboardController::class, 'systemHealth'])->name('dashboard.system-health');
@@ -306,19 +313,9 @@ Route::middleware(['auth', 'role:admin,kepsek'])->group(function () {
 // CSRF Token refresh
 Route::get('/csrf-token', function() {
     return response()->json(['token' => csrf_token()]);
-})->middleware('web');
+})->middleware(['web', 'auth']);
 
 // Alternative route without middleware
 Route::any('/refresh-token', function() {
     return csrf_token();
-});
-
-// Test route untuk debug CSRF
-Route::get('/test-csrf', function() {
-    return [
-        'csrf_token' => csrf_token(),
-        'session_id' => session()->getId(),
-        'session_started' => session()->isStarted(),
-        'middleware_except' => app('App\Http\Middleware\VerifyCsrfToken')->getExcept()
-    ];
-});
+})->middleware('auth');

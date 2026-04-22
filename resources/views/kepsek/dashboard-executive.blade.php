@@ -124,7 +124,7 @@
         <div class="col-md-4">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">🏆 Top Jurusan</h5>
+                    <h5 class="card-title mb-0"><i class="bi bi-trophy-fill text-warning me-1"></i> Top Jurusan</h5>
                 </div>
                 <div class="card-body">
                     @foreach($executiveSummary['top_jurusan'] as $index => $jurusan)
@@ -203,7 +203,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">✅ Recommended Actions</h5>
+                    <h5 class="card-title mb-0"><i class="bi bi-check-circle-fill text-success me-1"></i> Recommended Actions</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">

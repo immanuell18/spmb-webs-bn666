@@ -4,10 +4,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Database\Factories\JurusanFactory;
+
 
 class Jurusan extends Model
 {
     use HasFactory;
+
+    /**
+     * Override factory discovery — pastikan pakai JurusanFactory.
+     */
+    protected static function newFactory(): JurusanFactory
+    {
+        return JurusanFactory::new();
+    }
+
 
     protected $table = 'jurusan';
     

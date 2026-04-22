@@ -80,7 +80,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header bg-warning text-dark">
-                    <h5 class="mb-0">⚠️ Recent Suspicious Activities</h5>
+                    <h5 class="mb-0"><i class="bi bi-exclamation-triangle-fill text-warning me-1"></i> Recent Suspicious Activities</h5>
                 </div>
                 <div class="card-body">
                     @if($suspiciousActivities->count() > 0)

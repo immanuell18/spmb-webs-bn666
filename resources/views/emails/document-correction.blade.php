@@ -9,7 +9,7 @@
     <div style="max-width: 600px; margin: 0 auto; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
         <!-- Header -->
         <div style="background: linear-gradient(135deg, #ff6b6b 0%, #ffa500 100%); color: white; padding: 40px 20px; text-align: center;">
-            <h1 style="margin: 0; font-size: 28px; font-weight: bold;">📝 Perbaikan Berkas</h1>
+            <h1 style="margin: 0; font-size: 28px; font-weight: bold;"><i class="bi bi-pencil-square me-1"></i> Perbaikan Berkas</h1>
             <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Diperlukan Tindakan Anda</p>
         </div>
         
@@ -24,7 +24,7 @@
             <!-- Alert Box -->
             <div style="background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); border-left: 4px solid #ff6b6b; padding: 25px; margin: 30px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                 <h3 style="color: #d63031; margin: 0 0 15px 0; font-size: 18px; display: flex; align-items: center;">
-                    ⚠️ Catatan Verifikator:
+                    <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i> Catatan Verifikator:
                 </h3>
                 <p style="margin: 0; color: #856404; font-size: 16px; font-weight: 500; background: white; padding: 15px; border-radius: 6px; border: 1px solid #ffeaa7;">
                     {{ $correctionMessage }}
@@ -33,7 +33,7 @@
             
             <!-- Steps -->
             <div style="background: #f8f9fa; border-radius: 8px; padding: 25px; margin: 30px 0;">
-                <h3 style="color: #667eea; margin: 0 0 20px 0; font-size: 18px;">📋 Yang Perlu Anda Lakukan:</h3>
+                <h3 style="color: #667eea; margin: 0 0 20px 0; font-size: 18px;"><i class="bi bi-clipboard-data text-warning me-1"></i> Yang Perlu Anda Lakukan:</h3>
                 <ol style="color: #555; margin: 0; padding-left: 20px;">
                     <li style="margin-bottom: 10px; font-size: 15px;">Login ke sistem SPMB</li>
                     <li style="margin-bottom: 10px; font-size: 15px;">Buka halaman Upload Berkas</li>
@@ -45,7 +45,7 @@
             
             <div style="text-align: center; margin: 40px 0;">
                 <a href="{{ $berkasUrl }}" style="background: linear-gradient(135deg, #ff6b6b 0%, #ffa500 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 25px; display: inline-block; font-weight: bold; font-size: 16px; box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3); transition: all 0.3s ease;">
-                    🚀 Perbaiki Berkas Sekarang
+                    <i class="bi bi-lightning-charge-fill text-warning me-1"></i> Perbaiki Berkas Sekarang
                 </a>
             </div>
             

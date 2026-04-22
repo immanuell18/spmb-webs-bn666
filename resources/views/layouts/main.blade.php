@@ -26,9 +26,12 @@
     
     <!-- Cursor Fix -->
     <link href="{{ asset('assets/css/cursor-fix.css') }}" rel="stylesheet">
-    
+
     <!-- Responsive Fix -->
     <link href="{{ asset('assets/css/responsive-fix.css') }}" rel="stylesheet">
+
+    <!-- Vite: Tailwind utilities + SPMB custom classes (SETELAH Bootstrap) -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 @endsection
 
 @section('body')

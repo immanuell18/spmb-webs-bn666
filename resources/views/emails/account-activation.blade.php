@@ -9,7 +9,7 @@
     <div style="max-width: 600px; margin: 0 auto; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
         <!-- Header -->
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px 20px; text-align: center;">
-            <h1 style="margin: 0; font-size: 28px; font-weight: bold;">🎉 Selamat Datang!</h1>
+            <h1 style="margin: 0; font-size: 28px; font-weight: bold;"><i class="bi bi-award-fill text-success me-1"></i> Selamat Datang!</h1>
             <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">SMK Bakti Nusantara 666</p>
         </div>
         
@@ -22,7 +22,7 @@
             </p>
             
             <div style="background: #f8f9fa; border-left: 4px solid #667eea; padding: 20px; margin: 30px 0;">
-                <h3 style="color: #667eea; margin: 0 0 15px 0; font-size: 18px;">📋 Langkah Selanjutnya:</h3>
+                <h3 style="color: #667eea; margin: 0 0 15px 0; font-size: 18px;"><i class="bi bi-clipboard-data text-warning me-1"></i> Langkah Selanjutnya:</h3>
                 <ol style="color: #555; margin: 0; padding-left: 20px;">
                     <li style="margin-bottom: 8px;">Login ke sistem menggunakan email dan password Anda</li>
                     <li style="margin-bottom: 8px;">Lengkapi formulir pendaftaran dengan data diri</li>
@@ -34,7 +34,7 @@
             
             <div style="text-align: center; margin: 40px 0;">
                 <a href="{{ $loginUrl }}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 25px; display: inline-block; font-weight: bold; font-size: 16px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); transition: all 0.3s ease;">
-                    🚀 Login Sekarang
+                    <i class="bi bi-lightning-charge-fill text-warning me-1"></i> Login Sekarang
                 </a>
             </div>
             

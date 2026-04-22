@@ -14,7 +14,7 @@
                             <i class="ti ti-trophy fs-1"></i>
                         </div>
                         <div>
-                            <h4 class="mb-1">🏆 Pengumuman Hasil Seleksi</h4>
+                            <h4 class="mb-1"><i class="bi bi-trophy-fill text-warning me-1"></i> Pengumuman Hasil Seleksi</h4>
                             <p class="mb-0 opacity-75">Kelola pengumuman hasil seleksi untuk pendaftar yang sudah menyelesaikan pembayaran</p>
                         </div>
                     </div>
@@ -25,50 +25,28 @@
 
     <!-- Statistics Cards -->
     <div class="row g-3 mb-4">
+        @php
+        $statCards = [
+            ['gradient'=>'linear-gradient(135deg,#6366f1,#4f46e5)','shadow'=>'rgba(99,102,241,0.3)','icon'=>'ti-users','label'=>'Total','value'=>$pendaftar->where('status_akhir','LULUS')->count(),'desc'=>'Dinyatakan Lulus'],
+            ['gradient'=>'linear-gradient(135deg,#ef4444,#dc2626)','shadow'=>'rgba(239,68,68,0.3)','icon'=>'ti-x','label'=>'Tidak Lulus','value'=>$pendaftar->where('status_akhir','TIDAK_LULUS')->count(),'desc'=>'Tidak Lulus'],
+            ['gradient'=>'linear-gradient(135deg,#f59e0b,#d97706)','shadow'=>'rgba(245,158,11,0.3)','icon'=>'ti-clock','label'=>'Cadangan','value'=>$pendaftar->where('status_akhir','CADANGAN')->count(),'desc'=>'Status Cadangan'],
+            ['gradient'=>'linear-gradient(135deg,#64748b,#475569)','shadow'=>'rgba(100,116,139,0.3)','icon'=>'ti-hourglass','label'=>'Pending','value'=>$pendaftar->whereNull('status_akhir')->count(),'desc'=>'Belum Diumumkan'],
+        ];
+        @endphp
+        @foreach($statCards as $sc)
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body text-center py-4">
-                    <div class="text-success mb-3">
-                        <i class="ti ti-check-circle" style="font-size: 2.5rem;"></i>
+            <div style="background:{{ $sc['gradient'] }};box-shadow:0 8px 24px {{ $sc['shadow'] }};border-radius:16px;padding:24px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                    <div style="width:48px;height:48px;background:rgba(255,255,255,0.25);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                        <i class="ti {{ $sc['icon'] }}" style="font-size:22px;color:#fff !important;"></i>
                     </div>
-                    <h4 class="text-success mb-1">{{ $pendaftar->where('status_akhir', 'LULUS')->count() }}</h4>
-                    <p class="text-muted mb-0 fw-medium">Lulus</p>
+                    <span style="background:rgba(255,255,255,0.2);color:#fff !important;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;">{{ $sc['label'] }}</span>
                 </div>
+                <div style="color:#fff !important;font-size:32px;font-weight:800;line-height:1;margin-bottom:6px;">{{ $sc['value'] }}</div>
+                <div style="color:rgba(255,255,255,0.85) !important;font-size:13px;font-weight:500;">{{ $sc['desc'] }}</div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body text-center py-4">
-                    <div class="text-danger mb-3">
-                        <i class="ti ti-x-circle" style="font-size: 2.5rem;"></i>
-                    </div>
-                    <h4 class="text-danger mb-1">{{ $pendaftar->where('status_akhir', 'TIDAK_LULUS')->count() }}</h4>
-                    <p class="text-muted mb-0 fw-medium">Tidak Lulus</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body text-center py-4">
-                    <div class="text-warning mb-3">
-                        <i class="ti ti-clock" style="font-size: 2.5rem;"></i>
-                    </div>
-                    <h4 class="text-warning mb-1">{{ $pendaftar->where('status_akhir', 'CADANGAN')->count() }}</h4>
-                    <p class="text-muted mb-0 fw-medium">Cadangan</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body text-center py-4">
-                    <div class="text-secondary mb-3">
-                        <i class="ti ti-hourglass" style="font-size: 2.5rem;"></i>
-                    </div>
-                    <h4 class="text-secondary mb-1">{{ $pendaftar->whereNull('status_akhir')->count() }}</h4>
-                    <p class="text-muted mb-0 fw-medium">Belum Diumumkan</p>
-                </div>
-            </div>
-        </div>
+        @endforeach
     </div>
 
     @if(session('success'))
@@ -83,7 +61,7 @@
         <div class="card-header bg-white border-bottom">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h5 class="mb-1">📋 Daftar Pendaftar yang Sudah Bayar</h5>
+                    <h5 class="mb-1"><i class="bi bi-clipboard-data text-warning me-1"></i> Daftar Pendaftar yang Sudah Bayar</h5>
                     <small class="text-muted">Total: {{ $pendaftar->total() }} pendaftar</small>
                 </div>
                 <div>

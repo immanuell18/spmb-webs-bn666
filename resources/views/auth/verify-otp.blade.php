@@ -128,7 +128,7 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('password.verify-otp') }}" id="otpForm">
+            <form method="POST" action="{{ route('password.verify-otp.submit') }}" id="otpForm">
                 @csrf
                 <div class="mb-4">
                     <label class="form-label text-center d-block">Masukkan Kode OTP (6 digit)</label>

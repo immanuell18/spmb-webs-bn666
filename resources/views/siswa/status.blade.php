@@ -77,7 +77,7 @@
                             <div class="timeline-content">
                                 <h5 class="{{ $isFormComplete ? 'text-success' : 'text-warning' }}">Pengisian Data Pribadi</h5>
                                 <p class="text-muted">{{ $isFormComplete ? 'Data pribadi sudah lengkap' : 'Lengkapi profil dan data pribadi Anda' }}</p>
-                                <small class="text-muted">{{ $isFormComplete ? 'Selesai pada ' . ($pendaftar->created_at ?? now())->format('d M Y H:i') : 'Dalam proses' }}</small>
+                                <small class="text-muted">{{ $isFormComplete ? 'Selesai pada ' . ($pendaftar->created_at ? $pendaftar->created_at->format('d M Y H:i') : '') : 'Dalam proses' }}</small>
                             </div>
                         </div>
                         
@@ -99,7 +99,7 @@
                             <div class="timeline-content">
                                 <h5 class="{{ $isVerified ? 'text-success' : ($isBerkasComplete ? 'text-warning' : 'text-secondary') }}">Verifikasi Berkas</h5>
                                 <p class="text-muted">{{ $isVerified ? 'Berkas sudah diverifikasi dan diterima' : 'Tim verifikasi akan memeriksa dokumen Anda' }}</p>
-                                <small class="text-muted">{{ $isVerified ? 'Lulus verifikasi pada ' . ($pendaftar->tanggal_verifikasi ?? now())->format('d M Y H:i') : ($isBerkasComplete ? 'Sedang diverifikasi' : 'Menunggu') }}</small>
+                                <small class="text-muted">{{ $isVerified ? 'Lulus verifikasi pada ' . ($pendaftar->tgl_verifikasi_adm ? $pendaftar->tgl_verifikasi_adm->format('d M Y H:i') : '') : ($isBerkasComplete ? 'Sedang diverifikasi' : 'Menunggu') }}</small>
                             </div>
                         </div>
                         
@@ -110,7 +110,7 @@
                             <div class="timeline-content">
                                 <h5 class="{{ $pendaftar && $pendaftar->status == 'PAID' ? 'text-success' : ($pendaftar && $pendaftar->status == 'ADM_PASS' ? 'text-warning' : 'text-secondary') }}">Pembayaran</h5>
                                 <p class="text-muted">{{ $pendaftar && $pendaftar->status == 'PAID' ? 'Pembayaran sudah dikonfirmasi' : ($pendaftar && $pendaftar->status == 'ADM_PASS' ? 'Upload bukti pembayaran' : 'Menunggu verifikasi berkas') }}</p>
-                                <small class="text-muted">{{ $pendaftar && $pendaftar->status == 'PAID' ? 'Selesai' : ($pendaftar && $pendaftar->status == 'ADM_PASS' ? 'Siap bayar' : 'Menunggu') }}</small>
+                                <small class="text-muted">{{ $pendaftar && $pendaftar->status == 'PAID' ? 'Selesai pada ' . ($pendaftar->tgl_verifikasi_payment ? $pendaftar->tgl_verifikasi_payment->format('d M Y H:i') : '') : ($pendaftar && $pendaftar->status == 'ADM_PASS' ? 'Siap bayar' : 'Menunggu') }}</small>
                                 @if($pendaftar && $pendaftar->status == 'ADM_PASS')
                                     <br><a href="{{ route('siswa.bayar') }}" class="btn btn-sm btn-primary mt-2">Bayar Sekarang</a>
                                 @endif
@@ -125,16 +125,16 @@
                                 <h5 class="{{ $pendaftar && $pendaftar->status_akhir ? ($pendaftar->status_akhir == 'LULUS' ? 'text-success' : ($pendaftar->status_akhir == 'CADANGAN' ? 'text-warning' : 'text-danger')) : 'text-secondary' }}">Pengumuman Hasil</h5>
                                 @if($pendaftar && $pendaftar->status_akhir)
                                     @if($pendaftar->status_akhir == 'LULUS')
-                                        <p class="text-success"><strong>🎉 SELAMAT! Anda DITERIMA!</strong></p>
+                                        <p class="text-success"><strong><i class="bi bi-award-fill text-success me-1"></i> SELAMAT! Anda DITERIMA!</strong></p>
                                         <p class="text-muted">Selamat bergabung dengan keluarga besar sekolah kami!</p>
                                     @elseif($pendaftar->status_akhir == 'CADANGAN')
-                                        <p class="text-warning"><strong>📋 Anda masuk daftar CADANGAN</strong></p>
+                                        <p class="text-warning"><strong><i class="bi bi-clipboard-data text-warning me-1"></i> Anda masuk daftar CADANGAN</strong></p>
                                         <p class="text-muted">Mohon tunggu pengumuman selanjutnya</p>
                                     @else
-                                        <p class="text-danger"><strong>😔 Maaf, Anda belum berhasil kali ini</strong></p>
+                                        <p class="text-danger"><strong><i class="bi bi-x-circle text-danger me-1"></i> Maaf, Anda belum berhasil kali ini</strong></p>
                                         <p class="text-muted">Jangan menyerah, coba lagi di kesempatan berikutnya</p>
                                     @endif
-                                    <small class="text-muted">Diumumkan pada {{ $pendaftar->tgl_pengumuman->format('d M Y H:i') }}</small>
+                                    <small class="text-muted">Diumumkan pada {{ $pendaftar->tgl_pengumuman ? $pendaftar->tgl_pengumuman->format('d M Y H:i') : '' }}</small>
                                 @else
                                     <p class="text-muted">{{ $pendaftar && $pendaftar->status == 'PAID' ? 'Menunggu pengumuman hasil seleksi' : 'Selesaikan pembayaran terlebih dahulu' }}</p>
                                     <small class="text-muted">{{ $pendaftar && $pendaftar->status == 'PAID' ? 'Pengumuman akan segera diumumkan' : 'Menunggu' }}</small>
@@ -236,13 +236,13 @@
                                         </div>
                                         <small class="text-muted progress-message">
                                             @if($progress == 100)
-                                                🎉 Selamat! Semua tahap pendaftaran sudah selesai
+                                                <i class="bi bi-award-fill text-success me-1"></i> Selamat! Semua tahap pendaftaran sudah selesai
                                             @elseif($progress >= 66)
-                                                📋 Hampir selesai! Menunggu verifikasi berkas
+                                                <i class="bi bi-clipboard-data text-warning me-1"></i> Hampir selesai! Menunggu verifikasi berkas
                                             @elseif($progress >= 33)
-                                                📁 Lanjutkan dengan upload berkas
+                                                <i class="bi bi-folder-fill me-1"></i> Lanjutkan dengan upload berkas
                                             @else
-                                                📝 Mulai dengan melengkapi data pribadi
+                                                <i class="bi bi-pencil-square me-1"></i> Mulai dengan melengkapi data pribadi
                                             @endif
                                         </small>
                                         
@@ -463,13 +463,13 @@
         if (progressMessage) {
             let message = '';
             if (status.progress == 100) {
-                message = '🎉 Selamat! Semua tahap pendaftaran sudah selesai';
+                message = '<i class="bi bi-award-fill text-success me-1"></i> Selamat! Semua tahap pendaftaran sudah selesai';
             } else if (status.progress >= 66) {
-                message = '📋 Hampir selesai! Menunggu verifikasi berkas';
+                message = '<i class="bi bi-clipboard-data text-warning me-1"></i> Hampir selesai! Menunggu verifikasi berkas';
             } else if (status.progress >= 33) {
-                message = '📁 Lanjutkan dengan upload berkas';
+                message = '<i class="bi bi-folder-fill me-1"></i> Lanjutkan dengan upload berkas';
             } else {
-                message = '📝 Mulai dengan melengkapi data pribadi';
+                message = '<i class="bi bi-pencil-square me-1"></i> Mulai dengan melengkapi data pribadi';
             }
             progressMessage.textContent = message;
         }
@@ -492,7 +492,7 @@
         
         // Cek perubahan verifikasi
         if (!lastStatus.verified && newStatus.verified) {
-            showNotification('success', '🎉 Berkas sudah diverifikasi dan diterima!');
+            showNotification('success', '<i class="bi bi-award-fill text-success me-1"></i> Berkas sudah diverifikasi dan diterima!');
             setTimeout(() => location.reload(), 2000);
         }
         

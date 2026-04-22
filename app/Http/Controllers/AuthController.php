@@ -6,11 +6,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use App\Jobs\SendOtpEmailJob;
 use App\Models\User;
 use App\Models\Otp;
 use App\Models\AuditLog;
 use App\Models\LoginAttempt;
 use App\Mail\OtpMail;
+
 
 class AuthController extends Controller
 {
@@ -36,9 +38,16 @@ class AuthController extends Controller
         }
 
         if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-            
             $user = Auth::user();
+            
+            if (!$user->status) {
+                Auth::logout();
+                return back()->withErrors([
+                    'email' => 'Akun Anda dinonaktifkan. Harap hubungi Administrator.',
+                ]);
+            }
+
+            $request->session()->regenerate();
             
             // Log successful login
             LoginAttempt::logAttempt($credentials['email'], true);
@@ -101,16 +110,12 @@ class AuthController extends Controller
             ]
         ]);
 
-        // Generate dan kirim OTP
+        // Generate dan kirim OTP via queue (tidak blokir request)
         $otp = Otp::generateOtp($request->email);
-        
-        try {
-            Mail::to($request->email)->send(new OtpMail($otp->otp_code, $request->name));
-        } catch (\Exception $e) {
-            \Log::error('Email failed: ' . $e->getMessage());
-            return back()->withErrors(['email' => 'Gagal mengirim email OTP. Silakan coba lagi.']);
-        }
-        
+
+        SendOtpEmailJob::dispatch($request->email, $otp->otp_code, $request->name)
+                       ->onQueue('emails');
+
         return redirect()->route('otp.verify')->with('email', $request->email);
     }
 
@@ -166,9 +171,12 @@ class AuthController extends Controller
         }
 
         $otp = Otp::generateOtp($tempUser['email']);
-        Mail::to($tempUser['email'])->send(new OtpMail($otp->otp_code, $tempUser['name']));
-        
-        return response()->json(['success' => 'OTP baru telah dikirim']);
+
+        // Dispatch ke queue — tidak blokir response
+        SendOtpEmailJob::dispatch($tempUser['email'], $otp->otp_code, $tempUser['name'])
+                       ->onQueue('emails');
+
+        return response()->json(['success' => 'OTP baru telah dikirim ke email Anda']);
     }
 
     public function logout(Request $request)

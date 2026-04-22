@@ -2,14 +2,28 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreGelombangRequest;
+use App\Models\AuditLog;
 use App\Models\Gelombang;
+use Illuminate\Http\Request;
 
+/**
+ * GelombangController (root namespace)
+ *
+ * Dipakai oleh route resource `admin/gelombang` (index, create, edit, show).
+ * CRUD store/update/delete juga ada di sini karena route resource
+ * terdaftar ke controller ini di web.php.
+ *
+ * Form Requests: StoreGelombangRequest untuk validasi store & update.
+ */
 class GelombangController extends Controller
 {
     public function index()
     {
-        $gelombang = Gelombang::orderBy('tahun', 'desc')->orderBy('tgl_mulai', 'desc')->get();
+        $gelombang = Gelombang::orderBy('tahun', 'desc')
+                              ->orderBy('tgl_mulai', 'desc')
+                              ->paginate(20);
+
         return view('admin.gelombang.index', compact('gelombang'));
     }
 
@@ -18,21 +32,17 @@ class GelombangController extends Controller
         return view('admin.gelombang.create');
     }
 
-    public function store(Request $request)
+    /**
+     * Simpan gelombang baru — validasi via StoreGelombangRequest.
+     */
+    public function store(StoreGelombangRequest $request)
     {
-        $request->validate([
-            'nama' => 'required|string|max:255',
-            'tahun' => 'required|integer|min:2024|max:2030',
-            'tgl_mulai' => 'required|date',
-            'tgl_selesai' => 'required|date|after:tgl_mulai',
-            'biaya_daftar' => 'required|numeric|min:0',
-            'status' => 'required|in:aktif,nonaktif'
-        ]);
+        $gelombang = Gelombang::create($request->validated());
 
-        Gelombang::create($request->all());
+        AuditLog::log('CREATE', 'gelombang', $gelombang->id, null, $gelombang->toArray());
 
         return redirect()->route('admin.gelombang.index')
-                        ->with('success', 'Gelombang pendaftaran berhasil ditambahkan');
+                         ->with('success', 'Gelombang pendaftaran berhasil ditambahkan');
     }
 
     public function edit(Gelombang $gelombang)
@@ -40,41 +50,48 @@ class GelombangController extends Controller
         return view('admin.gelombang.edit', compact('gelombang'));
     }
 
-    public function update(Request $request, Gelombang $gelombang)
+    /**
+     * Update gelombang — validasi via StoreGelombangRequest.
+     */
+    public function update(StoreGelombangRequest $request, Gelombang $gelombang)
     {
-        $request->validate([
-            'nama' => 'required|string|max:255',
-            'tahun' => 'required|integer|min:2024|max:2030',
-            'tgl_mulai' => 'required|date',
-            'tgl_selesai' => 'required|date|after:tgl_mulai',
-            'biaya_daftar' => 'required|numeric|min:0',
-            'status' => 'required|in:aktif,nonaktif'
-        ]);
+        $oldData = $gelombang->toArray();
+        $gelombang->update($request->validated());
 
-        $gelombang->update($request->all());
+        AuditLog::log('UPDATE', 'gelombang', $gelombang->id, $oldData, $gelombang->fresh()->toArray());
 
-        return redirect()->route('admin.master-data')
-                        ->with('success', 'Gelombang berhasil diperbarui');
+        return redirect()->route('admin.gelombang.index')
+                         ->with('success', 'Gelombang berhasil diperbarui');
     }
 
+    /**
+     * Hapus gelombang — guard: tidak bisa hapus kalau sudah ada pendaftar.
+     */
     public function destroy(Gelombang $gelombang)
     {
-        // Cek apakah ada pendaftar di gelombang ini
         if ($gelombang->pendaftar()->count() > 0) {
             return back()->with('error', 'Tidak dapat menghapus gelombang yang sudah memiliki pendaftar');
         }
 
+        $deletedData = $gelombang->toArray();
         $gelombang->delete();
+
+        AuditLog::log('DELETE', 'gelombang', $gelombang->id, $deletedData, null);
+
         return redirect()->route('admin.gelombang.index')
-                        ->with('success', 'Gelombang pendaftaran berhasil dihapus');
+                         ->with('success', 'Gelombang pendaftaran berhasil dihapus');
     }
 
+    /**
+     * Toggle aktif/nonaktif gelombang.
+     */
     public function toggleStatus(Gelombang $gelombang)
     {
         $newStatus = $gelombang->status === 'aktif' ? 'nonaktif' : 'aktif';
         $gelombang->update(['status' => $newStatus]);
 
         $message = $newStatus === 'aktif' ? 'Gelombang diaktifkan' : 'Gelombang dinonaktifkan';
-        return redirect()->route('admin.master-data')->with('success', $message);
+
+        return redirect()->back()->with('success', $message);
     }
 }

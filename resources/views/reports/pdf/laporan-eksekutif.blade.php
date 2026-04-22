@@ -44,7 +44,7 @@
                     <div class="kpi-label">Rasio Pembayaran</div>
                 </div>
                 <div class="kpi-card">
-                    <div class="kpi-value">Rp {{ number_format($laporan['total_pemasukan']/1000000, 1) }}M</div>
+                    <div class="kpi-value" style="font-size: 16px;">Rp {{ number_format($laporan['total_pemasukan'], 0, ',', '.') }}</div>
                     <div class="kpi-label">Total Pemasukan</div>
                 </div>
             </div>
@@ -69,15 +69,15 @@
                 @foreach($gelombang as $g)
                 <tr>
                     <td>{{ $g->nama }}</td>
-                    <td>{{ $g->tanggal_mulai }} - {{ $g->tanggal_selesai }}</td>
+                    <td>{{ optional($g->tgl_mulai)->format('d M Y') }} - {{ optional($g->tgl_selesai)->format('d M Y') }}</td>
                     <td>{{ $g->pendaftar->count() }}</td>
-                    <td>{{ $g->pendaftar->where('status', 'ADM_PASS')->count() }}</td>
-                    <td>{{ $g->pendaftar->where('status_pembayaran', 'terbayar')->count() }}</td>
-                    <td>Rp {{ number_format($g->pendaftar->where('status_pembayaran', 'terbayar')->sum('biaya_pendaftaran'), 0, ',', '.') }}</td>
+                    <td>{{ $g->pendaftar->whereIn('status', ['ADM_PASS', 'PAID'])->count() }}</td>
+                    <td>{{ $g->pendaftar->where('status', 'PAID')->count() }}</td>
+                    <td>Rp {{ number_format($g->pendaftar->where('status', 'PAID')->sum('biaya_pendaftaran'), 0, ',', '.') }}</td>
                     <td>
-                        @if($g->tanggal_selesai < now())
+                        @if($g->tgl_selesai < now())
                             Selesai
-                        @elseif($g->tanggal_mulai <= now())
+                        @elseif($g->tgl_mulai <= now())
                             Aktif
                         @else
                             Belum Mulai

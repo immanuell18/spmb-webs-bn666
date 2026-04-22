@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
+use App\Jobs\SendOtpEmailJob;
 use App\Models\User;
 use App\Models\PasswordResetOtp;
 use App\Mail\OtpMail;
+
 
 class ForgotPasswordController extends Controller
 {
@@ -30,20 +32,18 @@ class ForgotPasswordController extends Controller
             return back()->with('error', 'Fitur lupa password hanya tersedia untuk pendaftar.');
         }
 
-        // Generate and send OTP
+        // Generate OTP dan kirim via queue
         $otpRecord = PasswordResetOtp::generateOtp($request->email);
-        
-        try {
-            Mail::to($request->email)->send(new OtpMail($otpRecord->otp, $user->name));
-            
-            // Store email in session
-            session(['email' => $request->email]);
-            
-            return redirect()->route('password.verify-otp')
-                           ->with('success', 'Kode OTP telah dikirim ke email Anda. Silakan cek inbox atau spam folder.');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Gagal mengirim OTP. Silakan coba lagi.');
-        }
+
+        // Dispatch ke queue 'emails' — tidak blokir response user
+        SendOtpEmailJob::dispatch($request->email, $otpRecord->otp, $user->name)
+                       ->onQueue('emails');
+
+        // Simpan email di session untuk halaman verifikasi
+        session(['email' => $request->email]);
+
+        return redirect()->route('password.verify-otp')
+                       ->with('success', 'Kode OTP sedang dikirim ke email Anda. Silakan cek inbox atau spam folder.');
     }
 
     public function showVerifyOtpForm()

@@ -5,10 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use Database\Factories\GelombangFactory;
+
 
 class Gelombang extends Model
 {
     use HasFactory;
+
+    /**
+     * Override factory discovery — pastikan pakai GelombangFactory.
+     */
+    protected static function newFactory(): GelombangFactory
+    {
+        return GelombangFactory::new();
+    }
+
 
     protected $table = 'gelombang';
     

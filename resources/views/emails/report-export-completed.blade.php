@@ -35,7 +35,7 @@
             <div class="info-box">
                 <strong>Detail Export:</strong><br>
                 📄 Tipe: {{ ucfirst(str_replace('_', ' ', $exportType)) }}<br>
-                📁 File: {{ $fileName }}<br>
+                <i class="bi bi-folder-fill me-1"></i> File: {{ $fileName }}<br>
                 ⏰ Berlaku sampai: {{ $expiryTime->format('d F Y H:i') }} WIB<br>
             </div>
             
@@ -46,7 +46,7 @@
             </div>
             
             <div class="info-box">
-                <strong>⚠️ Penting:</strong><br>
+                <strong><i class="bi bi-exclamation-triangle-fill text-warning me-1"></i> Penting:</strong><br>
                 • Link download akan expired dalam 24 jam<br>
                 • File akan otomatis terhapus setelah expired<br>
                 • Jika ada masalah, silakan hubungi administrator<br>

@@ -145,46 +145,26 @@ class PaymentController extends Controller
     }
 
     // Admin methods
-    public function dashboard()
+    public function adminDashboard()
     {
-        // Get stats from pendaftar table since PaymentTransaction might be empty
-        $totalPendaftar = Pendaftar::count();
-        $paidPendaftar = Pendaftar::where('status', 'PAID')->count();
-        $pendingPendaftar = Pendaftar::whereIn('status', ['SUBMIT', 'ADM_PASS'])->count();
-        
-        // Calculate revenue from gelombang biaya_daftar
-        $totalRevenue = \DB::table('pendaftar')
-            ->join('gelombang', 'pendaftar.gelombang_id', '=', 'gelombang.id')
-            ->where('pendaftar.status', 'PAID')
-            ->sum('gelombang.biaya_daftar');
+        // Get stats from actual PaymentTransaction table
+        $totalTransactions = PaymentTransaction::count();
+        $paidTransactions = PaymentTransaction::where('status', 'paid')->count();
+        $pendingTransactions = PaymentTransaction::where('status', 'pending')->count();
+        $totalRevenue = PaymentTransaction::where('status', 'paid')->sum('amount');
 
         $stats = [
-            'total_transactions' => $totalPendaftar,
-            'paid_transactions' => $paidPendaftar,
-            'pending_transactions' => $pendingPendaftar,
+            'total_transactions' => $totalTransactions,
+            'paid_transactions' => $paidTransactions,
+            'pending_transactions' => $pendingTransactions,
             'total_revenue' => $totalRevenue,
         ];
 
-        // Get recent paid pendaftar as "transactions"
-        $recentTransactions = Pendaftar::with(['gelombang', 'jurusan'])
-            ->where('status', 'PAID')
-            ->orderBy('updated_at', 'desc')
+        // Get actual recent transactions
+        $recentTransactions = PaymentTransaction::with(['pendaftar'])
+            ->orderBy('created_at', 'desc')
             ->limit(10)
-            ->get()
-            ->map(function($pendaftar) {
-                $amount = $pendaftar->gelombang->biaya_daftar ?? 0;
-                return (object) [
-                    'id' => $pendaftar->id,
-                    'order_id' => 'REG-' . $pendaftar->no_pendaftaran,
-                    'pendaftar' => $pendaftar,
-                    'amount' => $amount,
-                    'formatted_amount' => 'Rp ' . number_format($amount, 0, ',', '.'),
-                    'status' => 'paid',
-                    'status_badge' => '<span class="badge bg-success">PAID</span>',
-                    'gateway' => 'manual',
-                    'created_at' => $pendaftar->updated_at,
-                ];
-            });
+            ->get();
 
         return view('admin.payment.dashboard', compact('stats', 'recentTransactions'));
     }
